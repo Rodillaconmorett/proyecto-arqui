@@ -1,6 +1,8 @@
 package simulation.processor.impl;
 
-public abstract class ProcessorImpl implements simulation.processor.Processor {
+import simulation.processor.Processor;
+
+public abstract class ProcessorImpl implements Processor {
     public void setThreads(){
 
     }
