@@ -1,5 +1,3 @@
-package simulation;
-
 import java.io.*;
 
 public class Hilillo {
