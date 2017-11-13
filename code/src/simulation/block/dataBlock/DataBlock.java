@@ -9,16 +9,16 @@ public class DataBlock {
 
     /// This is where our data is stored.
     private int[] data;
-    /// Address of the block in our shared memory.
-    private int address;
     /// Actual state of our block.
     private BlockState state;
+    /// Block number
+    private int numBlock;
     /**
      * Constructor of our data block.
-     * @param finalAddress Location of our block in our shared memory.
+     * @param numBlock Location of our block in our shared memory.
      */
-    public DataBlock(int finalAddress){
-        address = finalAddress;
+    public DataBlock(int numBlock){
+        numBlock = numBlock;
         state = BlockState.UNCACHED;
         data = new int[4];
         // We must set all integers to 0 when initializing our data block.
@@ -27,20 +27,20 @@ public class DataBlock {
         }
     }
 
+    public int getNumBlock() {
+        return numBlock;
+    }
+
+    public void setNumBlock(int numBlock) {
+        this.numBlock = numBlock;
+    }
+
     public int[] getData() {
         return data;
     }
 
     public void setData(int[] block) {
         data = block;
-    }
-
-    public int getAddress() {
-        return address;
-    }
-
-    public void setAddress(int memAddress) {
-        address = memAddress;
     }
 
     public BlockState getState() {

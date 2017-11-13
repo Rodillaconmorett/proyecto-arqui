@@ -10,13 +10,13 @@ public class InstructionBlock {
 
     /// Each instruction block holds 4 instructions, which in return holds 4 integers.
     private Instruction[] instructions;
-    /// Address of the block in our instruction memory.
-    private int address;
     /// State of our block.
     private BlockState state;
+    /// Block number
+    private int numBlock;
 
-    public InstructionBlock(int finalAddress) {
-        address = finalAddress;
+    public InstructionBlock(int numBlock) {
+        numBlock = numBlock;
         state = BlockState.UNCACHED;
         instructions = new Instruction[4];
         for (int i = 0; i < 4; i++) {
@@ -25,20 +25,20 @@ public class InstructionBlock {
         }
     }
 
+    public int getNumBlock() {
+        return numBlock;
+    }
+
+    public void setNumBlock(int numBlock) {
+        this.numBlock = numBlock;
+    }
+
     public Instruction[] getInstructions() {
         return instructions;
     }
 
     public void setInstructions(Instruction[] newInstructions) {
         instructions = newInstructions;
-    }
-
-    public int getAddress() {
-        return address;
-    }
-
-    public void setAddress(int newAddress) {
-        address = newAddress;
     }
 
     public BlockState getState() {
