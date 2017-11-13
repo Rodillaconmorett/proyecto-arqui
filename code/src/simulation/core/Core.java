@@ -2,5 +2,8 @@ package simulation.core;
 
 public interface Core {
 
-    void execute(int rawInstruction);
+    /**
+     * Executes the next instruction.
+     */
+    void execute();
 }

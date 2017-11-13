@@ -6,9 +6,9 @@ public class Instruction {
     /**
      * Builds a new instruction instance
      * @param id The type of the instruction.
-     * @param p1 The first parameter of the instruction
-     * @param p2 The second parameter of the instruction
-     * @param p3 The third parameter of the instruction
+     * @param p1 The first parameter of the instruction.
+     * @param p2 The second parameter of the instruction.
+     * @param p3 The third parameter of the instruction.
      */
     public Instruction(int id, int p1, int p2, int p3){
         this.instruction = new int[4];
