@@ -32,7 +32,8 @@ public class InstructionMemory {
      */
     public void saveDataBlock(int address, InstructionBlock block) {
         block.setAddress(address);
-        blocks[address] = block;
+        int finalAddress = (address-initialAddress)/4;
+        blocks[finalAddress] = block;
     }
 
     public InstructionBlock getDataBlock(int address) {
