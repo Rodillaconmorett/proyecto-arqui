@@ -9,12 +9,15 @@ import simulation.block.instructionBlock.InstructionBlock;
 public class InstructionMemory {
     /// Memory block that holds our instructions.
     private InstructionBlock[] blocks;
+    /// Location of the first instruction.
+    private int initialAddress;
 
     /**
      * Default constructor.
      * @param blockCount Number of possible counts.
      */
-    public InstructionMemory(int blockCount) {
+    public InstructionMemory(int blockCount, int initialAddress) {
+        initialAddress = initialAddress;
         blocks = new InstructionBlock[blockCount];
         // We need to initialize all blocks and set all integers to 0.
         for(int i = 0; i<blocks.length; i++) {
@@ -33,6 +36,6 @@ public class InstructionMemory {
     }
 
     public InstructionBlock getDataBlock(int address) {
-        return blocks[address];
+        return blocks[address-initialAddress];
     }
 }
