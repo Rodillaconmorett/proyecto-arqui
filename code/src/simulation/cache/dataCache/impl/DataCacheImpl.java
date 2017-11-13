@@ -10,13 +10,15 @@ public abstract class DataCacheImpl implements simulation.cache.dataCache.DataCa
 
 
 
-    //
+    //Semaphore  of the memory bus
     Semaphore memoryBus;
+
     //
     DataBlock cache;
     //
     SharedMemory sharedMemory;
-    //
+
+    // D
     Directory directoryLocal;
     //
     Directory directoryRemote;
