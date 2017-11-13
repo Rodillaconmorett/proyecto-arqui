@@ -1,6 +1,10 @@
 package simulation.block.instruction;
 
+/**
+ * This object represents the instructions that our cores will be running.
+ */
 public class Instruction {
+    /// Instruction code.
     private int[] instruction;
 
     /**
