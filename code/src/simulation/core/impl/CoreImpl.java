@@ -8,23 +8,97 @@ import simulation.thread.Thread;
 
 public class CoreImpl implements Core {
 
+    ///
     private InstructionCache instructionCache;
     private DataCache dataCache;
     private int pcRegister;
+    private int currentThread;
+    private int currentContext;
+    private int[] registers;
     private int quantum;
+    private int quantumLeftCycles;
     private Thread[] threads;
 
+    /**
+     * Builds a new core
+     * @param instructionCache
+     * @param dataCache
+     * @param quantum
+     * @param threads
+     */
+    public CoreImpl(InstructionCache instructionCache,
+                    DataCache dataCache,
+                    int quantum,
+                    Thread[] threads
+                    ) {
+        this.instructionCache = instructionCache;
+        this.dataCache = dataCache;
+        this.quantum = quantum;
+        this.quantumLeftCycles = this.quantum;
+        this.threads = threads;
+        this.currentThread = 0;
+        this.currentContext = -1;
+    }
+
     @Override
-    public void execute(int rawInstruction) {
+    public void execute() {
+        if(currentThread < threads.length){
+            if(currentThread != currentContext){
+                if(currentContext >= 0){
+
+                }
+            }
+            int indexInstruction = 0;
+            Instruction instruction = read(indexInstruction);
+            switch (instruction.getTypeOfInstruction()) {
+                case 8:
+                    ExecuteDADDI(instruction);
+                    break;
+                case 32:
+                    ExecuteDADD(instruction);
+                    break;
+                case 34:
+                    ExecuteDSUB(instruction);
+                    break;
+                case 12:
+                    ExecuteDMUL(instruction);
+                    break;
+                case 14:
+                    ExecuteDDIV(instruction);
+                    break;
+                case 4:
+                    ExecuteBEQZ(instruction);
+                    break;
+                case 5:
+                    ExecuteBNEZ(instruction);
+                    break;
+                case 3:
+                    ExecuteJAL(instruction);
+                    break;
+                case 2:
+                    ExecuteJR(instruction);
+                    break;
+                case 35:
+                    ExecuteLW(instruction);
+                    break;
+                case 43:
+                    ExecuteSW(instruction);
+                    break;
+                case 63:
+                    ExecuteFIN(instruction);
+                    break;
+            }
+        }
 
     }
 
-    private Instruction read(int rawInstruction) {
+    /**
+     * Reads the instruction index
+     * @param indexInstruction
+     * @return
+     */
+    private Instruction read(int indexInstruction) {
         return null;
-    }
-
-    private void ExecuteBI(Instruction instruction) {
-
     }
 
     private void ExecuteDADDI(Instruction instruction) {
