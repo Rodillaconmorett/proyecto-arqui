@@ -24,7 +24,7 @@ public class SharedMemory {
     }
 
     public void saveDataBlock(DataBlock block) {
-        blocks[block.getAddress()] = block;
+        blocks[block.getNumBlock()] = block;
     }
 
     public DataBlock getDataBlock(int address) {
