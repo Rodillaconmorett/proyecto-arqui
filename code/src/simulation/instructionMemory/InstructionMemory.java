@@ -29,11 +29,12 @@ public class InstructionMemory {
      * Given an address and a block, saves that block in that location.
      * @param block Block to save.
      */
-    public void saveDataBlock(InstructionBlock block) {
-        blocks[block.getNumBlock()] = block;
+    public void saveInstructionBlock(InstructionBlock block) {
+        int position = initialAddress / 16;
+        blocks[block.getNumBlock() - position] = block;
     }
 
-    public InstructionBlock getDataBlock(int address) {
+    public InstructionBlock getInstructionBlock(int address) {
         int finalAddress = (address-initialAddress)/16;
         return blocks[finalAddress];
     }

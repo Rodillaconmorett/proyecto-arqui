@@ -3,17 +3,18 @@ package simulation.core.impl;
 import simulation.block.instruction.Instruction;
 import simulation.cache.dataCache.DataCache;
 import simulation.cache.instructionCache.InstructionCache;
+import simulation.clock.Clock;
 import simulation.core.Core;
 import simulation.thread.Thread;
 
-public class CoreImpl implements Core {
+public class CoreImpl extends java.lang.Thread implements Core {
 
     ///
     private InstructionCache instructionCache;
     private DataCache dataCache;
     private int pcRegister;
-    private int currentThread;
-    private int currentContext;
+    private int currentThreadIndex;
+    private int currentContextIndex;
     private int[] registers;
     private int quantum;
     private int quantumLeftCycles;
@@ -36,19 +37,28 @@ public class CoreImpl implements Core {
         this.quantum = quantum;
         this.quantumLeftCycles = this.quantum;
         this.threads = threads;
-        this.currentThread = 0;
-        this.currentContext = -1;
+        this.currentThreadIndex = 0;
+        this.currentContextIndex = -1;
+    }
+
+    @Override
+    public void run() {
+        execute();
     }
 
     @Override
     public void execute() {
-        if(currentThread < threads.length){
-            if(currentThread != currentContext){
-                if(currentContext >= 0){
-
+        if(currentThreadIndex < threads.length){
+            if(currentThreadIndex != currentContextIndex){
+                if(currentContextIndex >= 0){
+                    threads[currentContextIndex].saveContext(registers,pcRegister);
                 }
+                currentContextIndex = currentThreadIndex;
+                registers = threads[currentThreadIndex].getRegisters();
+                pcRegister = threads[currentThreadIndex].getPc();
+                quantumLeftCycles = quantum;
             }
-            int indexInstruction = 0;
+            int indexInstruction = threads[currentThreadIndex].getInstruction(pcRegister);
             Instruction instruction = read(indexInstruction);
             switch (instruction.getTypeOfInstruction()) {
                 case 8:
@@ -88,6 +98,10 @@ public class CoreImpl implements Core {
                     ExecuteFIN(instruction);
                     break;
             }
+            if(quantumLeftCycles < 1){
+                currentThreadIndex
+                        = (currentThreadIndex + 1) % threads.length;
+            }
         }
 
     }
@@ -98,7 +112,17 @@ public class CoreImpl implements Core {
      * @return
      */
     private Instruction read(int indexInstruction) {
-        return null;
+        Instruction instruction = null;
+        do{
+            instruction = instructionCache.readInstruction(indexInstruction);
+            if(instruction == null){
+                Clock.executeBarrier();
+                quantumLeftCycles--;
+            }
+        }
+        while(instruction == null);
+        quantumLeftCycles -= instructionCache.getUsedCyclesOfLastRead();
+        return instruction;
     }
 
     private void ExecuteDADDI(Instruction instruction) {
