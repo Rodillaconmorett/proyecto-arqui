@@ -21,7 +21,8 @@ public class InstructionMemory {
         blocks = new InstructionBlock[blockCount];
         // We need to initialize all blocks and set all integers to 0.
         for(int i = 0; i<blocks.length; i++) {
-            blocks[i] = new InstructionBlock(i);
+            int position = initialAddress/16;
+            blocks[i] = new InstructionBlock(i+position);
         }
     }
 
@@ -30,8 +31,8 @@ public class InstructionMemory {
      * @param block Block to save.
      */
     public void saveInstructionBlock(InstructionBlock block) {
-        int position = initialAddress / 16;
-        blocks[block.getNumBlock() - position] = block;
+        int position = initialAddress/16;
+        blocks[block.getNumBlock()-position] = block;
     }
 
     public InstructionBlock getInstructionBlock(int address) {
