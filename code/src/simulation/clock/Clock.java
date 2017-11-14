@@ -73,19 +73,15 @@ public class Clock {
             if(counter < coreCount) {
                 // Acquire our barrier and wait for the last core to finish.
                 barrier.acquire();
-                // After all cores have finished, we must remember to reduce our counter.
-                mutex.acquire();
-                counter--;
-                mutex.release();
             } else {
                 // After the last core finishes, we must increase our cycle count and reduce our counter.
                 mutex.acquire();
                 cycle++;
-                counter--;
+                counter = 0;
                 mutex.release();
+                // Release our barrier.
+                barrier.release(coreCount-1);
             }
-            // Relese our barrier.
-            barrier.release();
         } catch (Exception e) {
             System.out.println(e);
         }

@@ -34,8 +34,16 @@ public class Thread {
         cycles += numberCycles;
     }
 
+    /**
+     * Gets the instruction specified at index.
+     * @param index The specified instruction index;
+     * @return If index less than instructions length, returns the address of the instruction at the index.
+     * Otherwise, returns -1
+     */
     public int getInstruction(int index){
+        if(index < instructions.length)
         return instructions[index];
+        return -1;
     }
 
     /**
