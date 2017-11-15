@@ -31,6 +31,9 @@ public class Simulator {
         Processor processor_1 = new Processor(sharedMemory, instructionMemory_0, directory_0, directory_1, 2, 2, 256);
         Processor processor_2 = new Processor(sharedMemory, instructionMemory_1, directory_0, directory_1, 1, 1, 128);
 
+        processor_1.start();
+        processor_2.start();
+
 //        Processor_P0 processor_p0 = new Processor_P0();
 //        Processor_P1 processor_p1 = new Processor_P1();
     }

@@ -12,40 +12,51 @@ import simulation.thread.Thread;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Semaphore;
 
 public class Processor {
 
     private Core[] cores;
+    private Thread [] threads;
+    private List<Integer> indexThreads;
+    private InstructionCache instructionCache;
+    private Semaphore instructionBus;
+    private Semaphore threadSem;
+    private Semaphore memoryBus;
+    private DataCache dataCache;
 
     public Processor(SharedMemory sharedMemory,
                      InstructionMemory instructionMemory,
                      Directory localDirectory,
                      Directory remoteDirectory,
                      int coreCount, int threadCount, int initialAdressInst) {
-        Semaphore instructionBus = new Semaphore(1);
-        InstructionCache instructionCache = new InstructionCache(instructionBus, instructionMemory);
-        Semaphore memoryBus = new Semaphore(1);
-        DataCache dataCache = new DataCache_P0();
-
-        Thread [] threads= new Thread[threadCount];
-        createThreadsAndMemoryInstr(threads,instructionMemory,initialAdressInst);
-
-        /*threads[0].impVec();
-        System.out.println("Estoy aca");*/
+        this.instructionBus = new Semaphore(1);
+        this.threadSem = new Semaphore(1);
+        this.instructionCache = new InstructionCache(instructionBus, instructionMemory);
+        this.memoryBus = new Semaphore(1);
+        this.dataCache = new DataCache_P0();
+        this.threads= new Thread[threadCount];
+        indexThreads= new ArrayList<Integer>();
+        createThreadsAndMemoryInstr(instructionMemory,initialAdressInst);
+        for (int i = 0; i < threads.length; i++) {
+            this.indexThreads.add(i);
+        }
 
         cores = new Core[coreCount];
 
-        cores[0]=new Core(instructionCache,dataCache,100, threads);
-        cores[0].run();
-        for (int i = 0; i < cores.length; i++) {
+//        cores[0]=new Core(instructionCache,dataCache,100, threads,indexThreads, threadSem,memoryBus);
+//        cores[0].run();
+        for (int i = 0; i < coreCount; i++) {
             //TODO
             //New cores
+            cores[i]=new Core(instructionCache,dataCache,100, threads,indexThreads, threadSem,memoryBus);
         }
     }
 
-    public void createThreadsAndMemoryInstr(Thread[] threads, InstructionMemory instructionMemory, int initialAddressInst){
+    public void createThreadsAndMemoryInstr(InstructionMemory instructionMemory, int initialAddressInst){
 
         for (int i = 0; i < threads.length ; i++) {
 
@@ -89,4 +100,12 @@ public class Processor {
     }
 
 
+    public void start() {
+        for (int i = 0; i < 1; i++) {
+            //TODO
+            //New cores
+            cores[i].start();
+        }
+
+    }
 }
