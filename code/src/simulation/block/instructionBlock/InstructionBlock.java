@@ -49,4 +49,9 @@ public class InstructionBlock {
         state = newState;
     }
 
+    public  void setIntruction (Instruction instruction, int index){ instructions[index]= instruction; }
+
+    public Instruction getInst(int index){
+        return instructions[index];
+    }
 }

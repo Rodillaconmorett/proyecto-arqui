@@ -136,10 +136,9 @@ public class Core extends java.lang.Thread {
         registers[instruction.getSecondParameter()]
                 = registers[instruction.getFirstParameter()]
                 + instruction.getThirdParameter();
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
+        //System.out.println(registers[instruction.getSecondParameter()]);
         pcRegister++;
     }
 
@@ -147,10 +146,8 @@ public class Core extends java.lang.Thread {
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 + registers[instruction.getSecondParameter()];
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
         pcRegister++;
     }
 
@@ -158,10 +155,8 @@ public class Core extends java.lang.Thread {
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 - registers[instruction.getSecondParameter()];
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
         pcRegister++;
     }
 
@@ -169,10 +164,8 @@ public class Core extends java.lang.Thread {
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 * registers[instruction.getSecondParameter()];
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
         pcRegister++;
     }
 
@@ -180,10 +173,9 @@ public class Core extends java.lang.Thread {
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 / registers[instruction.getSecondParameter()];
-        for (int i = 0; i < 1; i++){
+
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
         pcRegister++;
     }
 
@@ -194,10 +186,8 @@ public class Core extends java.lang.Thread {
         else{
             pcRegister++;
         }
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
     }
 
     private void ExecuteBNEZ(Instruction instruction) {
@@ -207,27 +197,21 @@ public class Core extends java.lang.Thread {
         else{
             pcRegister++;
         }
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
     }
 
     private void ExecuteJAL(Instruction instruction) {
         registers[31] = pcRegister;
         pcRegister += registers[instruction.getFirstParameter()];
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
     }
 
     private void ExecuteJR(Instruction instruction) {
         pcRegister = registers[instruction.getFirstParameter()];
-        for (int i = 0; i < 1; i++){
             Clock.executeBarrier();
             quantumLeftCycles--;
-        }
     }
 
     private void ExecuteLW(Instruction instruction) {

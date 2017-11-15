@@ -1,14 +1,17 @@
 package simulation.thread;
 
+import java.util.List;
+import java.util.Vector;
+
 public class Thread {
     private int pc;
-    private int[] registers; // 32 enteros
-    private int[] instructions; // cada instruccion de de 4 enteros
+    private int[] registers;
+    private Vector<Integer> instructions;
     private int cycles;
 
-    public Thread(int pc, int[] registers, int[] instructions){
+    public Thread(int pc, Vector<Integer> instructions){
         this.pc = pc;
-        this.registers = registers;
+        registers  = new int[32];
         this.instructions = instructions;
         this.cycles = 0;
     }
@@ -41,8 +44,8 @@ public class Thread {
      * Otherwise, returns -1
      */
     public int getInstruction(int index){
-        if(index < instructions.length)
-        return instructions[index];
+        if(index < instructions.size())
+        return instructions.elementAt(index);
         return -1;
     }
 
@@ -52,5 +55,11 @@ public class Thread {
      */
     public void changePc(int nextPc){
         pc += nextPc;
+    }
+
+    public void impVec() {
+        for (int i = 0; i < instructions.size(); i++) {
+            System.out.println(instructions.elementAt(i));
+        }
     }
 }
