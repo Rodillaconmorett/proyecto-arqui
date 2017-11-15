@@ -1,11 +1,14 @@
 package simulation.simulator;
 
+import simulation.block.instruction.Instruction;
 import simulation.clock.Clock;
+import simulation.directory.directory.Directory;
 import simulation.instructionMemory.InstructionMemory;
-import simulation.processor.impl.Processor_P0;
-import simulation.processor.impl.Processor_P1;
+import simulation.processor.Processor;
 import simulation.sharedMemory.SharedMemory;
 import simulation.thread.Thread;
+
+import java.util.concurrent.Semaphore;
 
 public class Simulator {
 
@@ -16,11 +19,26 @@ public class Simulator {
     public void simulate(int threadCount) {
         Clock.setCoreCount(threadCount);
         SharedMemory sharedMemory = new SharedMemory(24);
-        InstructionMemory instructionMemory_0 = new InstructionMemory(24,256);
-        InstructionMemory instructionMemory_1 = new InstructionMemory(16,128);
+        InstructionMemory instructionMemory_0 = new InstructionMemory(24, 256);
+        InstructionMemory instructionMemory_1 = new InstructionMemory(16, 128);
+
+        Semaphore directoryLock_0 = new Semaphore(1);
+        Directory directory_0 = new Directory(16, 0, directoryLock_0);
+        Semaphore directoryLock_1 = new Semaphore(1);
+        Directory directory_1 = new Directory(8, 0, directoryLock_1);
+
+
+        Processor processor_1 = new Processor(sharedMemory, instructionMemory_0, directory_0, directory_1, 2, 2, 256);
+        Processor processor_2 = new Processor(sharedMemory, instructionMemory_1, directory_0, directory_1, 1, 1, 128);
+
+        processor_1.start();
+        processor_2.start();
+
 //        Processor_P0 processor_p0 = new Processor_P0();
 //        Processor_P1 processor_p1 = new Processor_P1();
     }
+
+
 //TODO
 //    public Thread readThread(String fileName) {
 //        Thread thread = new Thread();

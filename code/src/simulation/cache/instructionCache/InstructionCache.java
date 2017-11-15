@@ -23,14 +23,14 @@ public class InstructionCache {
         this.usedCycles = 0;
     }
 
-    public Instruction readInstruction(int indexInstruction) {
-        int blockAssigned = indexInstruction / 16;
+    public Instruction readInstruction(int addressInstruction) {
+        int blockAssigned = addressInstruction / 16;
         int positionCache = blockAssigned % 4;
         if(cache[positionCache].getNumBlock() != blockAssigned){//miss
             if(!busInstruction.tryAcquire()) {
                 return null;
             }
-            InstructionBlock instructions = memory.getInstructionBlock(indexInstruction);
+            InstructionBlock instructions = memory.getInstructionBlock(addressInstruction);
             cache[positionCache] = instructions;
             for (int i = 0; i < 16; i++) {
                 Clock.executeBarrier();
@@ -38,8 +38,8 @@ public class InstructionCache {
             }
             busInstruction.release();
         }
-        int wordPosition = (indexInstruction / 4) % 4;
-        return cache[blockAssigned].getInstructions()[wordPosition];
+        int wordPosition = (addressInstruction / 4) % 4;
+        return cache[positionCache].getInstructions()[wordPosition];
     }
 
     public int getUsedCyclesOfLastRead(){
