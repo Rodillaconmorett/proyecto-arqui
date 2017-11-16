@@ -5,12 +5,16 @@ import java.util.Vector;
 
 public class Thread {
     private int pc;
+    private int initialPc;
     private int[] registers;
     private Vector<Integer> instructions;
     private int cycles;
+    private boolean finished;
 
     public Thread(int pc, Vector<Integer> instructions) {
         this.pc = pc;
+        this.finished = false;
+        this.initialPc = pc;
         registers = new int[32];
         this.instructions = instructions;
         this.cycles = 0;
@@ -45,8 +49,9 @@ public class Thread {
      * Otherwise, returns -1
      */
     public int getInstruction(int index){
-        if(index < instructions.size())
-            return instructions.elementAt(index);
+        int finalIndex = index-initialPc;
+        if(finalIndex < instructions.size())
+            return instructions.elementAt(finalIndex);
         return -1;
     }
 
@@ -59,9 +64,19 @@ public class Thread {
         pc += nextPc;
     }
 
-    public void impVec() {
-        for (int i = 0; i < instructions.size(); i++) {
-            System.out.println(instructions.elementAt(i));
-        }
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    public int getInitialPc() {
+        return initialPc;
+    }
+
+    public Vector<Integer> getInstructions() {
+        return instructions;
     }
 }

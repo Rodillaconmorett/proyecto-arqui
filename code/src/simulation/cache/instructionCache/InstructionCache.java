@@ -1,5 +1,7 @@
 package simulation.cache.instructionCache;
 
+import simulation.Config;
+import simulation.SafePrint;
 import simulation.block.instruction.Instruction;
 import simulation.block.instructionBlock.InstructionBlock;
 import simulation.clock.Clock;
@@ -23,7 +25,7 @@ public class InstructionCache {
         this.usedCycles = 0;
     }
 
-    public Instruction readInstruction(int addressInstruction) {
+    public Instruction readInstruction(int addressInstruction, String coreName) {
         int blockAssigned = addressInstruction / 16;
         int positionCache = blockAssigned % 4;
         if(cache[positionCache].getNumBlock() != blockAssigned){//miss
@@ -33,6 +35,9 @@ public class InstructionCache {
             InstructionBlock instructions = memory.getInstructionBlock(addressInstruction);
             cache[positionCache] = instructions;
             for (int i = 0; i < 16; i++) {
+                if(Config.DISPLAY_INFO) {
+                    SafePrint.print(coreName+": Waiting for memory. Cycle: " + i);
+                }
                 Clock.executeBarrier();
                 usedCycles++;
             }
