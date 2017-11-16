@@ -1,12 +1,10 @@
 package simulation.simulator;
 
-import simulation.block.instruction.Instruction;
 import simulation.clock.Clock;
 import simulation.directory.directory.Directory;
 import simulation.instructionMemory.InstructionMemory;
 import simulation.processor.Processor;
 import simulation.sharedMemory.SharedMemory;
-import simulation.thread.Thread;
 
 import java.util.concurrent.Semaphore;
 

@@ -24,7 +24,7 @@ public class Processor {
     private List<Integer> indexThreads;
     private InstructionCache instructionCache;
     private Semaphore instructionBus;
-    private Semaphore threadSem;
+    private Semaphore [] threadSem;
     private Semaphore memoryBus;
     private DataCache dataCache;
 
@@ -34,16 +34,16 @@ public class Processor {
                      Directory remoteDirectory,
                      int coreCount, int threadCount, int initialAdressInst) {
         this.instructionBus = new Semaphore(1);
-        this.threadSem = new Semaphore(1);
+        this.threadSem= new Semaphore[threadCount];
+        for (int i = 0; i < threadCount; i++) {
+            this.threadSem[i] = new Semaphore(1);
+        }
         this.instructionCache = new InstructionCache(instructionBus, instructionMemory);
         this.memoryBus = new Semaphore(1);
         this.dataCache = new DataCache_P0();
         this.threads= new Thread[threadCount];
         indexThreads= new ArrayList<Integer>();
         createThreadsAndMemoryInstr(instructionMemory,initialAdressInst);
-        for (int i = 0; i < threads.length; i++) {
-            this.indexThreads.add(i);
-        }
 
         cores = new Core[coreCount];
 
@@ -52,7 +52,7 @@ public class Processor {
         for (int i = 0; i < coreCount; i++) {
             //TODO
             //New cores
-            cores[i]=new Core(instructionCache,dataCache,100, threads,indexThreads, threadSem,memoryBus);
+            cores[i]=new Core(instructionCache,dataCache,100, threads, threadSem,memoryBus);
         }
     }
 
