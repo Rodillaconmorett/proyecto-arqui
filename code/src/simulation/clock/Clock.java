@@ -1,5 +1,9 @@
 package simulation.clock;
 
+import simulation.Config;
+import simulation.SafePrint;
+
+import java.util.Scanner;
 import java.util.concurrent.*;
 
 /**
@@ -67,20 +71,26 @@ public class Clock {
         try {
             // Increase counter.
             mutex.acquire();
-            counter++;
-            mutex.release();
             // Should the counter be less than our core count, we need to wait in our barrier.
             if(counter < coreCount) {
+                counter++;
+                mutex.release();
                 // Acquire our barrier and wait for the last core to finish.
                 barrier.acquire();
             } else {
                 // After the last core finishes, we must increase our cycle count and reduce our counter.
-                mutex.acquire();
+                if(Config.DISPLAY_CYCLE_END) {
+                    String input = "";
+                    input = SafePrint.readInput("Press any key to continue or press Y to execute all instructions without waiting.");
+                    if(input.contentEquals("Y") || input.contentEquals("y")) {
+                        Config.DISPLAY_CYCLE_END = false;
+                    }
+                }
                 cycle++;
                 counter = 0;
                 mutex.release();
                 // Release our barrier.
-                barrier.release(coreCount-1);
+                barrier.release(coreCount);
             }
         } catch (Exception e) {
             System.out.println(e);

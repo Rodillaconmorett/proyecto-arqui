@@ -53,4 +53,8 @@ public class Instruction {
     public int getThirdParameter(){
         return instruction[3];
     }
+
+    public String print() {
+        return ""+getTypeOfInstruction()+" "+getFirstParameter()+" "+getSecondParameter()+" "+getThirdParameter();
+    }
 }

@@ -39,7 +39,8 @@ public class InstructionMemory {
     }
 
     /**
-     * @param address addres in  memory (256..636) or (128..380)
+     * Given an address, returns a block of instructions.
+     * @param address Address in  memory (256..636) or (128..380)
      * @return
      */
     public InstructionBlock getInstructionBlock(int address) {
@@ -47,15 +48,14 @@ public class InstructionMemory {
         return blocks[finalAddress];
     }
 
-    public void saveIntruction(Instruction instruction, int address) {
+    /**
+     * Loads instruction into the memory, one by one.
+     * @param instruction
+     * @param address
+     */
+    public void saveInstruction(Instruction instruction, int address) {
         int finalAddress = (address - initialAddress) / 16;
         int index = (address / 4) % 4;
         blocks[finalAddress].setIntruction(instruction, index);
-    }
-
-    public Instruction getInst(int address) {
-        int finalAddress = (address - initialAddress) / 16;
-        int index = (address % 16) / 4;
-        return blocks[finalAddress].getInst(index);
     }
 }
