@@ -12,8 +12,6 @@ import simulation.thread.Thread;
 
 import javax.swing.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Semaphore;
 
@@ -21,18 +19,17 @@ public class Processor {
 
     private Core[] cores;
     private Thread [] threads;
-    private List<Integer> indexThreads;
     private InstructionCache instructionCache;
     private Semaphore instructionBus;
     private Semaphore [] threadSem;
     private Semaphore memoryBus;
     private DataCache dataCache;
-
+    private int processor;
     public Processor(SharedMemory sharedMemory,
                      InstructionMemory instructionMemory,
                      Directory localDirectory,
                      Directory remoteDirectory,
-                     int coreCount, int threadCount, int initialAdressInst) {
+                     int coreCount, int threadCount, int initialAdressInst, int processor) {
         this.instructionBus = new Semaphore(1);
         this.threadSem= new Semaphore[threadCount];
         for (int i = 0; i < threadCount; i++) {
@@ -42,7 +39,6 @@ public class Processor {
         this.memoryBus = new Semaphore(1);
         this.dataCache = new DataCache_P0();
         this.threads= new Thread[threadCount];
-        indexThreads= new ArrayList<Integer>();
         createThreadsAndMemoryInstr(instructionMemory,initialAdressInst);
 
         cores = new Core[coreCount];
@@ -52,7 +48,7 @@ public class Processor {
         for (int i = 0; i < coreCount; i++) {
             //TODO
             //New cores
-            cores[i]=new Core(instructionCache,dataCache,100, threads, threadSem,memoryBus);
+            cores[i]=new Core(instructionCache,dataCache,100, threads, threadSem,memoryBus, i, processor);
         }
     }
 
@@ -101,7 +97,7 @@ public class Processor {
 
 
     public void start() {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < cores.length; i++) {
             //TODO
             //New cores
             cores[i].start();

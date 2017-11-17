@@ -19,7 +19,7 @@ public class InstructionMemory {
      * @param blockCount Number of possible counts.
      */
     public InstructionMemory(int blockCount, int initialAddress) {
-        initialAddress = initialAddress;
+        this.initialAddress = initialAddress;
         blocks = new InstructionBlock[blockCount];
         // We need to initialize all blocks and set all integers to 0.
         int position = initialAddress / 16;

@@ -6,7 +6,6 @@ import simulation.cache.instructionCache.InstructionCache;
 import simulation.clock.Clock;
 import simulation.thread.Thread;
 
-import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class Core extends java.lang.Thread {
@@ -23,7 +22,8 @@ public class Core extends java.lang.Thread {
     private Thread[] threads;
     private Semaphore[] threadSem;
     private Semaphore memoryBus;
-
+    private int corename;
+    private int processor;
     /**
      * Builds a new core
      *
@@ -38,7 +38,7 @@ public class Core extends java.lang.Thread {
                 DataCache dataCache,
                 int quantum,
                 Thread[] threads,
-                Semaphore[] threadSem, Semaphore memoryBus) {
+                Semaphore[] threadSem, Semaphore memoryBus, int corename, int processor) {
         this.instructionCache = instructionCache;
         this.dataCache = dataCache;
         this.quantum = quantum;
@@ -49,6 +49,8 @@ public class Core extends java.lang.Thread {
         this.currentContextIndex = -1;
         this.threadSem = threadSem;
         this.memoryBus = memoryBus;
+        this.corename= corename;
+        this.processor= processor;
     }
 
     @Override
@@ -76,11 +78,11 @@ public class Core extends java.lang.Thread {
                         if (instruction.getTypeOfInstruction() == 63) {
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
                             for (int i = 0; i <threads[currentThreadIndex].getRegisters().length ; i++) {
-                                    System.out.println(currentThreadIndex+" hilo : "+threads[currentThreadIndex].getRegisters()[i]);
+                                    System.out.println( "Procesador: "+processor+"  Core: "+corename+", hilillo : "+currentThreadIndex+ "  Reg "+i+": "+threads[currentThreadIndex].getRegisters()[i]);
                             }
                             --cont;
                             currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-
+                            currentContextIndex=-1;
                             Clock.executeBarrier();
                             break;
 //                        currentContextIndex = -1;
@@ -253,15 +255,4 @@ public class Core extends java.lang.Thread {
 
     }
 
-    private void printThreads() {
-        for (int i = 0; i < threads.length; i++) {
-            int[] reg = threads[i].getRegisters();
-            for (int j = 0; j < reg.length; j++) {
-
-                System.out.println(reg[j]);
-
-            }
-        }
-
-    }
 }
