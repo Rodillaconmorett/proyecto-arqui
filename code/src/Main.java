@@ -6,8 +6,8 @@ public class Main {
 //        System.out.println("inicio");
 //        //simulation.thread.Thread h = new simulation.thread.Thread(1);
 //        // h.guardarContexto();
-//        Simulator s= new Simulator();
-//        s.simulate(2);
+//        Simulator s= new Simulator(2,100);
+////        s.simulate(2,100);
 //        System.out.println("fin");
     }
 }
