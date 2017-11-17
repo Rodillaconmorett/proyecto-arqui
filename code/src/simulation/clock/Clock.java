@@ -42,6 +42,23 @@ public class Clock {
     }
 
     /**
+     * Change the number of cores that are left running in our processors.
+     */
+    public static void reduceCoreCount() {
+        try {
+            mutex.acquire();
+            coreCount -= 1;
+            if (counter >= coreCount) {
+                barrier.release(counter);
+                counter = 0;
+            }
+            mutex.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Returns the number of cores that we are working with.
      * @return Number of cores.
      */
@@ -72,16 +89,12 @@ public class Clock {
             // Increase counter.
             mutex.acquire();
             // Should the counter be less than our core count, we need to wait in our barrier.
-            if(counter < coreCount) {
+            if(counter < coreCount && coreCount > 1) {
                 counter++;
                 mutex.release();
                 // Acquire our barrier and wait for the last core to finish.
                 barrier.acquire();
             } else {
-                cycle++;
-                counter = 0;
-                mutex.release();
-                // After the last core finishes, we must increase our cycle count and reduce our counter.
                 if(Config.DISPLAY_CYCLE_END) {
                     String input = "";
                     input = SafePrint.readInput("Press any key to continue or press Y to execute all instructions without waiting.");
@@ -89,8 +102,12 @@ public class Clock {
                         Config.DISPLAY_CYCLE_END = false;
                     }
                 }
+                cycle++;
                 // Release our barrier.
-                barrier.release(coreCount);
+                barrier.release(counter);
+                // After the last core finishes, we must increase our cycle count and reduce our counter.
+                counter = 0;
+                mutex.release();
             }
         } catch (Exception e) {
             System.out.println(e);
