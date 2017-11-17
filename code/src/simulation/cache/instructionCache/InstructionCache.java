@@ -36,7 +36,7 @@ public class InstructionCache {
             cache[positionCache] = instructions;
             for (int i = 0; i < 16; i++) {
                 if(Config.DISPLAY_INFO) {
-                   // SafePrint.print(coreName+": Waiting for memory. Cycle: " + i);
+                   SafePrint.print(coreName+": Waiting for memory. Cycle: " + i);
                 }
                 Clock.executeBarrier();
                 usedCycles++;

@@ -79,8 +79,10 @@ public class Core extends java.lang.Thread {
                                 printInstruction(instruction, pcRegister);
                             }
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
-                            for (int i = 0; i <threads[currentThreadIndex].getRegisters().length ; i++) {
+                            if(Config.DISPLAY_REGISTER) {
+                                for (int i = 0; i <threads[currentThreadIndex].getRegisters().length ; i++) {
                                     System.out.println(coreName+ ": Thread: "+ currentThreadIndex+" => R"+i+": "+threads[currentThreadIndex].getRegisters()[i]);
+                                }
                             }
                             threads[currentThreadIndex].setFinished(true);
                             currentThreadIndex = (currentThreadIndex + 1) % threads.length;
