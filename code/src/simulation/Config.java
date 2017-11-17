@@ -10,6 +10,8 @@ public class Config {
     public static boolean DISPLAY_INFO = true;
     // Let out program know if at the end of each cycle, we need to stop for the a user input.
     public static boolean DISPLAY_CYCLE_END = false;
+    // At the end of each thread, this variable will define if we either show or not the register results.
+    public static boolean DISPLAY_REGISTER = false;
     // Initial address of our Instruction Memory 0.
     public static final int INSTRUCTION_MEMORY_0_INITIAL_ADDRESS = 256;
     // Initial address of our Instruction Memory 1.

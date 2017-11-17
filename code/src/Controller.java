@@ -95,6 +95,19 @@ public class Controller {
         } else {
             Config.DISPLAY_CYCLE_END = false;
         }
+        do {
+            input = recieveStringFromUser("Do you wish to see each threads' registers when it finishes? Y[YES] / N[NO]");
+            if(input.contentEquals("Y") || input.contentEquals("y") || input.contentEquals("N") || input.contentEquals("n")) {
+                check = true;
+            } else {
+                System.out.println("Please, choose either Y || N. Can also be in lower case.");
+            }
+        } while(!check);
+        if(input.contentEquals("Y") || input.contentEquals("y")) {
+            Config.DISPLAY_REGISTER = true;
+        } else {
+            Config.DISPLAY_REGISTER = false;
+        }
         Simulator simulator = new Simulator(Config.CORE_COUNT_P1+Config.CORE_COUNT_P0, quantum);
         for(int i = 0; i < Config.threads.size(); i++) {
             try {

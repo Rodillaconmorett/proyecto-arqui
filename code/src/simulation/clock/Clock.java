@@ -78,6 +78,9 @@ public class Clock {
                 // Acquire our barrier and wait for the last core to finish.
                 barrier.acquire();
             } else {
+                cycle++;
+                counter = 0;
+                mutex.release();
                 // After the last core finishes, we must increase our cycle count and reduce our counter.
                 if(Config.DISPLAY_CYCLE_END) {
                     String input = "";
@@ -86,9 +89,6 @@ public class Clock {
                         Config.DISPLAY_CYCLE_END = false;
                     }
                 }
-                cycle++;
-                counter = 0;
-                mutex.release();
                 // Release our barrier.
                 barrier.release(coreCount);
             }
