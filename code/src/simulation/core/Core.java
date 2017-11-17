@@ -69,17 +69,14 @@ public class Core extends java.lang.Thread {
                         registers = threads[currentThreadIndex].getRegisters();
                         pcRegister = threads[currentThreadIndex].getPc();
                     }
-                    int addressInstruction = threads[currentThreadIndex].getInstruction(pcRegister);
-                    if (addressInstruction < 0) {
+                    if (pcRegister < 0) {
                         threads[currentThreadIndex].saveContext(registers, pcRegister);
                         currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                     } else {
-                        Instruction instruction = read(addressInstruction);
+                        Instruction instruction = read(pcRegister);
                         if (instruction.getTypeOfInstruction() == 63) {
-                            int initialPC = threads[currentThreadIndex].getInitialPc();
-                            int pcExecuted = (pcRegister-initialPC)*4;
                             if(Config.DISPLAY_INFO) {
-                                printInstruction(instruction, pcExecuted+initialPC);
+                                printInstruction(instruction, pcRegister);
                             }
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
                             for (int i = 0; i <threads[currentThreadIndex].getRegisters().length ; i++) {
@@ -175,124 +172,104 @@ public class Core extends java.lang.Thread {
     }
 
     private void ExecuteDADDI(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         registers[instruction.getSecondParameter()]
                 = registers[instruction.getFirstParameter()]
                 + instruction.getThirdParameter();
         Clock.executeBarrier();
         quantumLeftCycles--;
-        pcRegister++;
+        pcRegister+=4;
     }
 
     private void ExecuteDADD(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 + registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
-        pcRegister++;
+        pcRegister+=4;
     }
 
     private void ExecuteDSUB(Instruction instruction) {
-
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
-
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 - registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
-        pcRegister++;
+        pcRegister+=4;
     }
 
     private void ExecuteDMUL(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 * registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
-        pcRegister++;
+        pcRegister+=4;
     }
 
     private void ExecuteDDIV(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         registers[instruction.getThirdParameter()]
                 = registers[instruction.getFirstParameter()]
                 / registers[instruction.getSecondParameter()];
-        pcRegister++;
+        pcRegister+=4;
         Clock.executeBarrier();
         quantumLeftCycles--;
     }
 
     private void ExecuteBEQZ(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         if (registers[instruction.getFirstParameter()] == 0) {
-            pcRegister += instruction.getThirdParameter();
+            pcRegister += (instruction.getThirdParameter()*4);
         }
-        pcRegister++;
+        pcRegister+=4;
         Clock.executeBarrier();
         quantumLeftCycles--;
     }
 
     private void ExecuteBNEZ(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         if (registers[instruction.getFirstParameter()] != 0) {
-            pcRegister += instruction.getThirdParameter();
+            pcRegister += (instruction.getThirdParameter()*4);
 
         }
-        pcRegister++;
+        pcRegister+=4;
         Clock.executeBarrier();
         quantumLeftCycles--;
     }
 
     private void ExecuteJAL(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
-        registers[31] = pcRegister + 1;
-        pcRegister++;
-        pcRegister = pcRegister + (instruction.getThirdParameter() / 4);
+        pcRegister+=4;
+        registers[31] = pcRegister;
+        pcRegister = pcRegister + (instruction.getThirdParameter());
         Clock.executeBarrier();
         quantumLeftCycles--;
     }
 
     private void ExecuteJR(Instruction instruction) {
-        int initialPC = threads[currentThreadIndex].getInitialPc();
-        int pcExecuted = (pcRegister-initialPC)*4;
         if(Config.DISPLAY_INFO) {
-            printInstruction(instruction, pcExecuted+initialPC);
+            printInstruction(instruction, pcRegister);
         }
         pcRegister = registers[instruction.getFirstParameter()];
         Clock.executeBarrier();

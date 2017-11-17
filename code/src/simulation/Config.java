@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Config {
     // Display information at the end of each instruction.
-    public static boolean DISPLAY_INFO = false;
+    public static boolean DISPLAY_INFO = true;
     // Let out program know if at the end of each cycle, we need to stop for the a user input.
     public static boolean DISPLAY_CYCLE_END = false;
     // Initial address of our Instruction Memory 0.
