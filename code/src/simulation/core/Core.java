@@ -56,84 +56,86 @@ public class Core extends java.lang.Thread {
         this.memoryBus = memoryBus;
     }
 
+
     @Override
     public void run() {
         while (true) {
-            if (threadSem[currentThreadIndex].tryAcquire()) {
-                while (true) {
-                    if (currentThreadIndex != currentContextIndex) {
-                        if (currentContextIndex >= 0) {
-                            threads[currentContextIndex].saveContext(registers, pcRegister);
+            if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished()) {
+                try {
+                    while (true) {
+                        if (currentThreadIndex != currentContextIndex) {
+                            currentContextIndex = currentThreadIndex;
+                            registers = threads[currentThreadIndex].getRegisters();
+                            pcRegister = threads[currentThreadIndex].getPc();
                         }
-                        currentContextIndex = currentThreadIndex;
-                        registers = threads[currentThreadIndex].getRegisters();
-                        pcRegister = threads[currentThreadIndex].getPc();
-                    }
-                    if (pcRegister < 0) {
-                        threads[currentThreadIndex].saveContext(registers, pcRegister);
-                        currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                    } else {
-                        Instruction instruction = read(pcRegister);
-                        if (instruction.getTypeOfInstruction() == 63) {
-                            if(Config.DISPLAY_INFO) {
-                                printInstruction(instruction, pcRegister);
-                            }
+                        if (pcRegister < 0) {
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
-                            if(Config.DISPLAY_REGISTER) {
-                                for (int i = 0; i <threads[currentThreadIndex].getRegisters().length ; i++) {
-                                    System.out.println(coreName+ ": Thread: "+ currentThreadIndex+" => R"+i+": "+threads[currentThreadIndex].getRegisters()[i]);
+                            currentThreadIndex = (currentThreadIndex + 1) % threads.length;
+                        } else {
+                            Instruction instruction = read(pcRegister);
+                            if (instruction.getTypeOfInstruction() == 63) {
+                                if (Config.DISPLAY_INFO) {
+                                    printInstruction(instruction, pcRegister);
+                                }
+                                threads[currentThreadIndex].saveContext(registers, pcRegister);
+                                if (Config.DISPLAY_REGISTER) {
+                                    for (int i = 0; i < threads[currentThreadIndex].getRegisters().length; i++) {
+                                        System.out.println(coreName + ": Thread: " + currentThreadIndex + " => R" + i + ": " + threads[currentThreadIndex].getRegisters()[i]);
+                                    }
+                                }
+                                threads[currentThreadIndex].setFinished(true);
+                                currentThreadIndex = (currentThreadIndex + 1) % threads.length;
+                                Clock.executeBarrier();
+                                break;
+                            } else {
+                                switch (instruction.getTypeOfInstruction()) {
+                                    case 2:
+                                        ExecuteJR(instruction);
+                                        break;
+                                    case 3:
+                                        ExecuteJAL(instruction);
+                                        break;
+                                    case 4:
+                                        ExecuteBEQZ(instruction);
+                                        break;
+                                    case 5:
+                                        ExecuteBNEZ(instruction);
+                                        break;
+                                    case 8:
+                                        ExecuteDADDI(instruction);
+                                        break;
+                                    case 12:
+                                        ExecuteDMUL(instruction);
+                                        break;
+                                    case 14:
+                                        ExecuteDDIV(instruction);
+                                        break;
+                                    case 32:
+                                        ExecuteDADD(instruction);
+                                        break;
+                                    case 34:
+                                        ExecuteDSUB(instruction);
+                                        break;
+                                    case 35:
+                                        ExecuteLW(instruction);
+                                        break;
+                                    case 43:
+                                        ExecuteSW(instruction);
+                                        break;
+                                }
+                                if (quantumLeftCycles < 1) {
+                                    quantumLeftCycles = quantum;
+                                    threads[currentContextIndex].saveContext(registers, pcRegister);
+                                    break;
                                 }
                             }
-                            threads[currentThreadIndex].setFinished(true);
-                            currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                            Clock.executeBarrier();
-                            break;
-                        } else {
-                            switch (instruction.getTypeOfInstruction()) {
-                                case 2:
-                                    ExecuteJR(instruction);
-                                    break;
-                                case 3:
-                                    ExecuteJAL(instruction);
-                                    break;
-                                case 4:
-                                    ExecuteBEQZ(instruction);
-                                    break;
-                                case 5:
-                                    ExecuteBNEZ(instruction);
-                                    break;
-                                case 8:
-                                    ExecuteDADDI(instruction);
-                                    break;
-                                case 12:
-                                    ExecuteDMUL(instruction);
-                                    break;
-                                case 14:
-                                    ExecuteDDIV(instruction);
-                                    break;
-                                case 32:
-                                    ExecuteDADD(instruction);
-                                    break;
-                                case 34:
-                                    ExecuteDSUB(instruction);
-                                    break;
-                                case 35:
-                                    ExecuteLW(instruction);
-                                    break;
-                                case 43:
-                                    ExecuteSW(instruction);
-                                    break;
-                            }
-                            if (quantumLeftCycles < 1) {
-                                threadSem[currentThreadIndex].release();
-                                currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                                quantumLeftCycles = quantum;
-                                break;
-                            }
                         }
                     }
+                } finally {
+                    threadSem[currentThreadIndex].release();
+                    currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                 }
-            }else{
+            } else {
                 currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                 int counter = 0;
                 for (Thread thread : threads) {
@@ -142,8 +144,7 @@ public class Core extends java.lang.Thread {
                     }
                 }
                 if (threadsDidFinished() || counter < 1){
-                    Clock.setCoreCount(Clock.getCoreCount()-1);
-                    Clock.executeBarrier();
+                    Clock.reduceCoreCount();
                     break;
                 } else {
                     Clock.executeBarrier();
