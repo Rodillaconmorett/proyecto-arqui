@@ -24,7 +24,7 @@ public class Processor {
     private Semaphore[] threadSem;
     private Semaphore memoryBus;
     private DataCache dataCache;
-    private String procesorName;
+    private String processorName;
 
     public Processor(SharedMemory sharedMemory,
                      InstructionMemory instructionMemory,
@@ -35,10 +35,12 @@ public class Processor {
                      int threadCount,
                      int initialAddressInst,
                      int quantum,
-                     String procesorName) {
+                     String processorName,
+                     Semaphore[] localDataCacheLock,
+                     Semaphore[] remoteDataCacheLock) {
         this.instructionBus = new Semaphore(1);
-        this.procesorName = procesorName;
-        this.threadSem= new Semaphore[threadCount];
+        this.processorName = processorName;
+        this.threadSem = new Semaphore[threadCount];
         for (int i = 0; i < threadCount; i++) {
             this.threadSem[i] = new Semaphore(1);
         }
@@ -46,11 +48,61 @@ public class Processor {
         this.memoryBus = new Semaphore(1);
         this.dataCache = new DataCache_P0();
         this.threads = threads;
+
+        switch (this.processorName){
+            case "Processor 0":
+                cores = new Core[2];
+                cores[0] = new Core(instructionCache,
+                        dataCache,
+                        quantum,
+                        threads,
+                        threadSem,
+                        memoryBus,
+                        processorName+": Core: 0",
+                        localDataCacheLock,
+                        remoteDataCacheLock);
+                Config.threads.add(cores[0]);
+                cores[1] = new Core(instructionCache,
+                        dataCache,
+                        quantum,
+                        threads,
+                        threadSem,
+                        memoryBus,
+                        processorName+": Core: 1",
+                        new Semaphore[]{localDataCacheLock[1],localDataCacheLock[0]},
+                        remoteDataCacheLock);
+                Config.threads.add(cores[1]);
+                break;
+            case "Processor 1":
+                cores = new Core[1];
+                cores[0] = new Core(instructionCache,
+                        dataCache,
+                        quantum,
+                        threads,
+                        threadSem,
+                        memoryBus,
+                        processorName+": Core: 0",
+                        localDataCacheLock,
+                        remoteDataCacheLock);
+                Config.threads.add(cores[0]);
+                break;
+        }
+
+        /*
         cores = new Core[coreCount];
         for (int i = 0; i < coreCount; i++) {
-            cores[i] = new Core(instructionCache, dataCache, quantum, threads, threadSem, memoryBus, procesorName+": Core: "+i);
+            cores[i] = new Core(instructionCache,
+                    dataCache,
+                    quantum,
+                    threads,
+                    threadSem,
+                    memoryBus,
+                    processorName+": Core: "+i,
+                    new Semaphore[]{},
+                    new Semaphore[]{});
             Config.threads.add(cores[i]);
         }
+        */
     }
 
     public void start() {

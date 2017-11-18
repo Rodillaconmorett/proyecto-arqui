@@ -3,6 +3,7 @@ package simulation.cache.dataCache;
 import simulation.block.dataBlock.DataBlock;
 import simulation.clock.Clock;
 import simulation.directory.directory.Directory;
+import simulation.directory.directoryInput.DirectoryInput;
 import simulation.sharedMemory.SharedMemory;
 import simulation.states.BlockState;
 
@@ -26,7 +27,6 @@ public abstract class DataCache {
 
     private DataBlock[] cache;
 
-
     private int usedCycles;
 
     public DataCache() {
@@ -42,82 +42,143 @@ public abstract class DataCache {
                                    Semaphore[] remoteDataCacheLock){
         int blockAssigned = dataAddress / 16;
         int positionCache = blockAssigned % 4;
-        if(cache[positionCache].getNumBlock() != blockAssigned){//miss
+        // Check for miss
+        if(cache[positionCache].getNumBlock() != blockAssigned
+                || cache[positionCache].getState() == BlockState.INVALID){
+            // Check if victim block is modified or shared
             if(cache[positionCache].getState() == BlockState.MODIFIED
                     || cache[positionCache].getState() == BlockState.SHARED){
-                boolean directoryVictimLocal;
-                if(localDataCacheLock.length == 2){
-                    directoryVictimLocal = blockAssigned < 16;
+                Directory victimDirectory;
+                Semaphore victimDirectoryLock;
+                int memoryCycles;
+                int directoryCycles;
+                // Define which data cache we are working with
+                if((localDataCacheLock.length == 2 && blockAssigned < 16)
+                        || (localDataCacheLock.length == 1 && blockAssigned >= 16)){
+                    victimDirectory = localDirectory;
+                    victimDirectoryLock = localDirectoryLock;
+                    memoryCycles = 16;
+                    directoryCycles = 1;
                 }
                 else /*if(localDataCacheLock.length == 1)*/ {
-                    directoryVictimLocal = blockAssigned >= 16;
+                    victimDirectory = remoteDirectory;
+                    victimDirectoryLock = remoteDirectoryLock;
+                    memoryCycles = 40;
+                    directoryCycles = 5;
                 }
-                if(directoryVictimLocal){
-                    if(localDirectoryLock.tryAcquire()){
-                        //localDirectory.modificar
-                        if(cache[positionCache].getState() == BlockState.MODIFIED){
-                            for (int i = 0; i < 1; i++) {
-                                Clock.executeBarrier();
-                                usedCycles++;
-                            }
-                            if(memoryBus.tryAcquire()){
-                                for (int i = 0; i < 16; i++) {
+
+                if(victimDirectoryLock.tryAcquire()) {
+                    try {
+                        for (int i = 0; i < directoryCycles; i++) {
+                            Clock.executeBarrier();
+                            usedCycles++;
+                        }
+                        // Check if victim has been modified
+                        if (cache[positionCache].getState() == BlockState.MODIFIED) {
+                            if (memoryBus.tryAcquire()) {
+                                try {
+                                    for (int i = 0; i < memoryCycles; i++) {
+                                        Clock.executeBarrier();
+                                        usedCycles++;
+                                    }
+                                    sharedMemory.saveDataBlock(cache[positionCache]);
+                                    //localDirectory.modificar y el bloque queda en u
+                                    victimDirectory.setCacheState(dataAddress, false,
+                                            false, false, BlockState.UNCACHED);
+                                    cache[blockAssigned].setState(BlockState.INVALID);
+                                } /* Releasing memory bus */ finally {
+                                    memoryBus.release();
                                     Clock.executeBarrier();
                                     usedCycles++;
                                 }
-                                DataBlock newDataBlock = new DataBlock(cache[positionCache].getNumBlock());
-                                newDataBlock.setData(cache[positionCache].getData());
-                                sharedMemory.saveDataBlock(newDataBlock);
-                                //localDirectory.modificar y el bloque queda en u
-                                memoryBus.release();
-                                localDirectoryLock.release();
-                            }
-                            else {
-                                localDirectoryLock.release();
+                            } else {
                                 return null;
                             }
+                        } else {
+                            // In case that our block is shared by more than one cache, we need to set the
+                            // state for this cache as false, otherwise we changed to uncached.
+                            if(victimDirectory.countStates(dataAddress) > 1 && victimDirectory.findState(dataAddress) == BlockState.SHARED) {
+                                victimDirectory.setSpecificCacheState(dataAddress,this,false);
+                            } else {
+                                victimDirectory.setCacheState(dataAddress, false,
+                                        false, false, BlockState.UNCACHED);
+                            }
+                            // In case we can't continue because we are lacking resources we need to make
+                            // sure that we changed our cache state.
+                            cache[blockAssigned].setState(BlockState.INVALID);
                         }
-                    }
-                    else {
-                        return null;
+                    } /* Releasing victim directory */ finally {
+                        victimDirectoryLock.release();
+                        Clock.executeBarrier();
+                        usedCycles++;
                     }
                 }
-                else{
-                    if(remoteDirectoryLock.tryAcquire()){
-                        //remoteDirectory.modificar
-                        if(cache[positionCache].getState() == BlockState.MODIFIED){
-                            for (int i = 0; i < 5; i++) {
-                                Clock.executeBarrier();
-                                usedCycles++;
-                            }
-                            if(memoryBus.tryAcquire()){
-                                for (int i = 0; i < 40; i++) {
-                                    Clock.executeBarrier();
-                                    usedCycles++;
-                                }
-                                DataBlock newDataBlock = new DataBlock(cache[positionCache].getNumBlock());
-                                newDataBlock.setData(cache[positionCache].getData());
-                                sharedMemory.saveDataBlock(newDataBlock);
-                                //localDirectory.modificar y el bloque queda en u
-                                memoryBus.release();
-                                remoteDirectoryLock.release();
-                            }
-                            else {
-                                remoteDirectoryLock.release();
-                                return null;
-                            }
-                        }
-                    }
-                    else {
-                        return null;
-                    }
+                else {
+                    return null;
                 }
             }
-            /***************************************/
-
+            Directory blockDirectory;
+            Semaphore blockDirectoryLock;
+            int memoryCycles;
+            int directoryCycles;
+            // Define which data cache we are working with
+            if((localDataCacheLock.length == 2 && blockAssigned < 16)
+                    || (localDataCacheLock.length == 1 && blockAssigned >= 16)){
+                blockDirectory = localDirectory;
+                blockDirectoryLock = localDirectoryLock;
+                memoryCycles = 16;
+                directoryCycles = 1;
+            }
+            else /*if(localDataCacheLock.length == 1)*/ {
+                blockDirectory = remoteDirectory;
+                blockDirectoryLock = remoteDirectoryLock;
+                memoryCycles = 40;
+                directoryCycles = 5;
+            }
+            if(blockDirectoryLock.tryAcquire()){
+                try {
+                    for (int i = 0; i < directoryCycles; i++) {
+                        Clock.executeBarrier();
+                        usedCycles++;
+                    }
+                    if(blockDirectory.findState(dataAddress) != BlockState.MODIFIED){
+                        if(memoryBus.tryAcquire()){
+                            try {
+                                for (int i = 0; i < memoryCycles; i++) {
+                                    Clock.executeBarrier();
+                                    usedCycles++;
+                                }
+                                cache[positionCache] = sharedMemory.getDataBlock(dataAddress);
+                                if (blockDirectory.findState(dataAddress) == BlockState.UNCACHED) {
+                                    blockDirectory.changeCacheState(dataAddress,this, true, BlockState.SHARED);
+                                } else {
+                                    blockDirectory.setSpecificCacheState(dataAddress, this, true);
+                                }
+                                int wordPosition = (dataAddress / 4) % 4;
+                                return cache[positionCache].getData()[wordPosition];
+                            } finally {
+                                memoryBus.release();
+                                Clock.executeBarrier();
+                                usedCycles++;
+                            }
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        // TODO
+                    }
+                } finally {
+                    blockDirectoryLock.release();
+                    Clock.executeBarrier();
+                    usedCycles++;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            int wordPosition = (dataAddress / 4) % 4;
+            return cache[positionCache].getData()[wordPosition];
         }
-        int wordPosition = (dataAddress / 4) % 4;
-        return cache[positionCache].getData()[wordPosition];
     }
 
     public int getUsedCyclesOfLastRead(){
