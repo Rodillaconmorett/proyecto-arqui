@@ -1,5 +1,6 @@
 package simulation.directory.directory;
 
+import simulation.cache.dataCache.DataCache;
 import simulation.directory.directoryInput.DirectoryInput;
 import simulation.states.BlockState;
 
@@ -15,6 +16,8 @@ public class Directory {
     private DirectoryInput[] inputs;
     /// Initial address of the first block in shared memory that this directory manages.
     private int initialAddress;
+    /// References to our caches.
+    private DataCache[] caches;
 
     /**
      * Default constructor.
@@ -22,12 +25,13 @@ public class Directory {
      * @param initialAddress Initial address of the first block contained in the directory.
      * @param lock Lock that we will use to prevent synchronization errors.
      */
-    public Directory(int inputCount, int initialAddress, Semaphore lock) {
-        directoryLock = lock;
-        initialAddress = initialAddress;
-        inputs = new DirectoryInput[inputCount];
-        for (int i = 0; i < inputs.length; i++) {
-            inputs[i] = new DirectoryInput();
+    public Directory(int inputCount, int initialAddress, Semaphore lock, DataCache[] caches) {
+        this.caches = caches;
+        this.directoryLock = lock;
+        this.initialAddress = initialAddress;
+        this.inputs = new DirectoryInput[inputCount];
+        for (int i = 0; i < this.inputs.length; i++) {
+            this.inputs[i] = new DirectoryInput();
         }
     }
 
@@ -66,4 +70,33 @@ public class Directory {
         inputs[finalAddress].setCacheState(2,cache_2);
     }
 
+    /**
+     * Check the position of our cache in the inputs array.
+     * @param address Input address.
+     * @param cache Cache we want to look for.
+     * @param state New state.
+     */
+    public void setSpecificCacheState(int address, DataCache cache, boolean state){
+        int finalAddress = (address-initialAddress)/16;
+        for (int i = 0; i < caches.length; i++) {
+            if(caches[i] == cache) {
+                inputs[finalAddress].setCacheState(i,state);
+            }
+        }
+    }
+
+    public void changeCacheState(int address, DataCache cache, boolean state, BlockState blockState){
+        int finalAddress = (address-initialAddress)/16;
+        inputs[finalAddress].setState(blockState);
+        for (int i = 0; i < caches.length; i++) {
+            if(caches[i] == cache) {
+                inputs[finalAddress].setCacheState(i,state);
+            }
+        }
+    }
+
+    public int countStates(int address) {
+        int finalAddress = (address-initialAddress)/16;
+        return inputs[finalAddress].countValidStates();
+    }
 }

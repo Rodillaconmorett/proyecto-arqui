@@ -44,4 +44,14 @@ public class DirectoryInput {
         caches[numCache] = cacheState;
     }
 
+    public int countValidStates() {
+        int counter = 0;
+        for (int i = 0; i < caches.length; i++) {
+            if(caches[i]){
+                counter++;
+            }
+        }
+        return counter;
+    }
+
 }

@@ -54,6 +54,10 @@ public class Simulator {
             }
         }
 
+        Semaphore dataCacheLock_0 = new Semaphore(1);
+        Semaphore dataCacheLock_1 = new Semaphore(1);
+        Semaphore dataCacheLock_2 = new Semaphore(1);
+
         Processor processor_0 = new Processor(sharedMemory,
                 instructionMemory_0,
                 directory_0,
@@ -63,7 +67,9 @@ public class Simulator {
                 threadCountP0,
                 Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS,
                 quantum,
-                "Processor 0");
+                "Processor 0",
+                new Semaphore[]{dataCacheLock_0,dataCacheLock_1},
+                new Semaphore[]{dataCacheLock_2});
 
         Processor processor_1 = new Processor(sharedMemory,
                 instructionMemory_1,
@@ -74,7 +80,9 @@ public class Simulator {
                 threadCountP1,
                 Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS,
                 quantum,
-                "Processor 1");
+                "Processor 1",
+                new Semaphore[]{dataCacheLock_2},
+                new Semaphore[]{dataCacheLock_0,dataCacheLock_1});
 
         processor_0.start();
         processor_1.start();

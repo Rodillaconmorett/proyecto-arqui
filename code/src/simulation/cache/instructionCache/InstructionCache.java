@@ -28,7 +28,7 @@ public class InstructionCache {
     public Instruction readInstruction(int addressInstruction, String coreName) {
         int blockAssigned = addressInstruction / 16;
         int positionCache = blockAssigned % 4;
-        if(cache[positionCache].getNumBlock() != blockAssigned){//miss
+        if(cache[positionCache].getNumBlock() != blockAssigned){
             if(!busInstruction.tryAcquire()) {
                 return null;
             }
