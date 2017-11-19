@@ -32,16 +32,31 @@ public class InstructionCache {
             if(!busInstruction.tryAcquire()) {
                 return null;
             }
-            InstructionBlock instructions = memory.getInstructionBlock(addressInstruction);
-            cache[positionCache] = instructions;
-            for (int i = 0; i < 16; i++) {
-                if(Config.DISPLAY_INFO) {
-                   SafePrint.print(coreName+": Waiting for memory. Cycle: " + i);
+            if(memory.getMyLock().tryAcquire()) {
+                try {
+                    for (int i = 0; i < 16; i++) {
+                        if (Config.DISPLAY_INFO) {
+                            SafePrint.print(coreName + ": Waiting for memory. Cycle: " + i);
+                        }
+                        Clock.executeBarrier();
+                        usedCycles++;
+                    }
+                    InstructionBlock instructions = memory.getInstructionBlock(addressInstruction);
+                    cache[positionCache] = instructions;
+                } finally {
+                    memory.getMyLock().release();
+                    Clock.executeBarrier();
+                    usedCycles++;
                 }
+            } else {
+                busInstruction.release();
                 Clock.executeBarrier();
                 usedCycles++;
+                return null;
             }
             busInstruction.release();
+            Clock.executeBarrier();
+            usedCycles++;
         }
         int wordPosition = (addressInstruction / 4) % 4;
         return cache[positionCache].getInstructions()[wordPosition];

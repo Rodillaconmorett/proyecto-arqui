@@ -4,6 +4,8 @@ package simulation.instructionMemory;
 import simulation.block.instruction.Instruction;
 import simulation.block.instructionBlock.InstructionBlock;
 
+import java.util.concurrent.Semaphore;
+
 /**
  * Object that represents our instruction memory.
  */
@@ -12,6 +14,8 @@ public class InstructionMemory {
     private InstructionBlock[] blocks;
     /// Location of the first instruction.
     private int initialAddress;
+    /// Instruction memory lock.
+    private Semaphore myLock;
 
     /**
      * Default constructor.
@@ -19,6 +23,7 @@ public class InstructionMemory {
      * @param blockCount Number of possible counts.
      */
     public InstructionMemory(int blockCount, int initialAddress) {
+        this.myLock = new Semaphore(1);
         this.initialAddress = initialAddress;
         blocks = new InstructionBlock[blockCount];
         // We need to initialize all blocks and set all integers to 0.
@@ -57,5 +62,9 @@ public class InstructionMemory {
         int finalAddress = (address - initialAddress) / 16;
         int index = (address / 4) % 4;
         blocks[finalAddress].setIntruction(instruction, index);
+    }
+
+    public Semaphore getMyLock() {
+        return myLock;
     }
 }

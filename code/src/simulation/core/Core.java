@@ -25,9 +25,6 @@ public class Core extends java.lang.Thread {
     private int quantumLeftCycles;
     private Thread[] threads;
     private Semaphore[] threadSem;
-    private Semaphore memoryBus;
-    private Semaphore[] localDataCacheLock;
-    private Semaphore[] remoteDataCacheLock;
 
     /**
      * Builds a new core
@@ -37,17 +34,13 @@ public class Core extends java.lang.Thread {
      * @param quantum
      * @param threads
      * @param threadSem
-     * @param memoryBus
      */
     public Core(InstructionCache instructionCache,
                 DataCache dataCache,
                 int quantum,
                 Thread[] threads,
                 Semaphore[] threadSem,
-                Semaphore memoryBus,
-                String coreName,
-                Semaphore[] localDataCacheLock,
-                Semaphore[] remoteDataCacheLock) {
+                String coreName) {
         this.instructionCache = instructionCache;
         this.dataCache = dataCache;
         this.quantum = quantum;
@@ -57,9 +50,6 @@ public class Core extends java.lang.Thread {
         this.currentThreadIndex = 0;
         this.currentContextIndex = -1;
         this.threadSem = threadSem;
-        this.memoryBus = memoryBus;
-        this.localDataCacheLock = localDataCacheLock;
-        this.remoteDataCacheLock = remoteDataCacheLock;
     }
 
 
@@ -91,9 +81,7 @@ public class Core extends java.lang.Thread {
                                 }
                                 threads[currentThreadIndex].saveContext(registers, pcRegister);
                                 if (Config.DISPLAY_REGISTER) {
-                                    for (int i = 0; i < threads[currentThreadIndex].getRegisters().length; i++) {
-                                        System.out.println(coreName + ": Thread: " + currentThreadIndex + " => R" + i + ": " + threads[currentThreadIndex].getRegisters()[i]);
-                                    }
+                                    SafePrint.printRegisters(threads[currentThreadIndex],coreName);
                                 }
                                 threads[currentThreadIndex].setFinished(true);
                                 currentThreadIndex = (currentThreadIndex + 1) % threads.length;
@@ -294,25 +282,25 @@ public class Core extends java.lang.Thread {
     private void ExecuteLW(Instruction instruction) {
         Integer memoryRequired = null;
         do {
-            while(!localDataCacheLock[0].tryAcquire()){
+            while(!dataCache.getMyLock().tryAcquire()){
                 Clock.executeBarrier();
                 quantumLeftCycles--;
             }
             memoryRequired = dataCache
-                    .getDataRequired(instruction.getThirdParameter()
-                                    + registers[instruction.getFirstParameter()],
-                            localDataCacheLock, remoteDataCacheLock);
+                    .getDataRequired(instruction.getThirdParameter() + registers[instruction.getFirstParameter()], this.coreName);
             if (memoryRequired == null) {
+                quantumLeftCycles -= dataCache.getUsedCyclesOfLastRead();
+                dataCache.getMyLock().release();
+                Clock.executeBarrier();
+                quantumLeftCycles--;
+            } else {
+                quantumLeftCycles -= dataCache.getUsedCyclesOfLastRead();
+                pcRegister += 4;
+                dataCache.getMyLock().release();
                 Clock.executeBarrier();
                 quantumLeftCycles--;
             }
-            else{
-                quantumLeftCycles -= instructionCache.getUsedCyclesOfLastRead();
-                pcRegister += 4;
-            }
-            localDataCacheLock[0].release();
-        }
-        while (memoryRequired == null);
+        } while (memoryRequired == null);
         Clock.executeBarrier();
         quantumLeftCycles--;
         registers[instruction.getFirstParameter()] = memoryRequired;
