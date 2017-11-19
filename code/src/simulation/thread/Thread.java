@@ -1,6 +1,5 @@
 package simulation.thread;
 
-import java.util.List;
 import java.util.Vector;
 
 public class Thread {
@@ -10,14 +9,16 @@ public class Thread {
     private Vector<Integer> instructions;
     private int cycles;
     private boolean finished;
+    private String name;
 
-    public Thread(int pc, Vector<Integer> instructions) {
+    public Thread(int pc, Vector<Integer> instructions, String name) {
         this.pc = pc;
         this.finished = false;
         this.initialPc = pc;
         registers = new int[32];
         this.instructions = instructions;
         this.cycles = 0;
+        this.name = name;
     }
 
     public void saveContext(int[] registers, int pc) {
@@ -78,5 +79,9 @@ public class Thread {
 
     public Vector<Integer> getInstructions() {
         return instructions;
+    }
+
+    public String getName() {
+        return name;
     }
 }

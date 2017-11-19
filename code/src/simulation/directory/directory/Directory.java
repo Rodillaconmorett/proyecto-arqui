@@ -23,11 +23,10 @@ public class Directory {
      * Default constructor.
      * @param inputCount Number of entrees that our directory will contain.
      * @param initialAddress Initial address of the first block contained in the directory.
-     * @param lock Lock that we will use to prevent synchronization errors.
      */
-    public Directory(int inputCount, int initialAddress, Semaphore lock, DataCache[] caches) {
+    public Directory(int inputCount, int initialAddress, DataCache[] caches) {
         this.caches = caches;
-        this.directoryLock = lock;
+        this.directoryLock = new Semaphore(1);
         this.initialAddress = initialAddress;
         this.inputs = new DirectoryInput[inputCount];
         for (int i = 0; i < this.inputs.length; i++) {
@@ -90,7 +89,7 @@ public class Directory {
         inputs[finalAddress].setState(blockState);
         for (int i = 0; i < caches.length; i++) {
             if(caches[i] == cache) {
-                inputs[finalAddress].setCacheState(i,state);
+                inputs[finalAddress].setCacheState(i, state);
             }
         }
     }
@@ -98,5 +97,9 @@ public class Directory {
     public int countStates(int address) {
         int finalAddress = (address-initialAddress)/16;
         return inputs[finalAddress].countValidStates();
+    }
+
+    public Semaphore getDirectoryLock() {
+        return directoryLock;
     }
 }

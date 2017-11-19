@@ -1,6 +1,7 @@
 package simulation.simulator;
 
 import simulation.block.instruction.Instruction;
+import simulation.cache.dataCache.DataCache;
 import simulation.clock.Clock;
 import simulation.directory.directory.Directory;
 import simulation.instructionMemory.InstructionMemory;
@@ -25,10 +26,41 @@ public class Simulator {
         InstructionMemory instructionMemory_0 = new InstructionMemory(24, Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS);
         InstructionMemory instructionMemory_1 = new InstructionMemory(16, Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS);
 
-        Semaphore directoryLock_0 = new Semaphore(1);
-        Directory directory_0 = new Directory(16, 0, directoryLock_0);
-        Semaphore directoryLock_1 = new Semaphore(1);
-        Directory directory_1 = new Directory(8, 0, directoryLock_1);
+        DataCache dataCache_1 = new DataCache(new Semaphore(1));
+        DataCache dataCache_2 = new DataCache(new Semaphore(1));
+        DataCache dataCache_3 = new DataCache(new Semaphore(1));
+
+        dataCache_1.addLocalCaches(dataCache_2);
+        dataCache_1.addRemoteCaches(dataCache_3);
+
+        dataCache_2.addLocalCaches(dataCache_1);
+        dataCache_2.addRemoteCaches(dataCache_3);
+
+        dataCache_3.addRemoteCaches(dataCache_1);
+        dataCache_3.addRemoteCaches(dataCache_2);
+
+        Semaphore memoryBus_1 = new Semaphore(1);
+        Semaphore memoryBus_2 = new Semaphore(1);
+
+        dataCache_1.setMemoryBus(memoryBus_1);
+        dataCache_2.setMemoryBus(memoryBus_1);
+        dataCache_3.setMemoryBus(memoryBus_2);
+
+        dataCache_1.setSharedMemory(sharedMemory);
+        dataCache_2.setSharedMemory(sharedMemory);
+        dataCache_3.setSharedMemory(sharedMemory);
+
+        Semaphore interConnectionBus = new Semaphore(1);
+
+        dataCache_1.setInterConnectionBus(interConnectionBus);
+        dataCache_2.setInterConnectionBus(interConnectionBus);
+        dataCache_3.setInterConnectionBus(interConnectionBus);
+
+        DataCache[] caches = new DataCache[3];
+
+        caches[0] = dataCache_1;
+        caches[1] = dataCache_2;
+        caches[2] = dataCache_3;
 
         File folder = new File("threads");
         ArrayList<File> files = new ArrayList<File>(Arrays.asList(folder.listFiles()));
@@ -54,35 +86,39 @@ public class Simulator {
             }
         }
 
-        Semaphore dataCacheLock_0 = new Semaphore(1);
-        Semaphore dataCacheLock_1 = new Semaphore(1);
-        Semaphore dataCacheLock_2 = new Semaphore(1);
+        Semaphore directoryLock_0 = new Semaphore(1);
+        Directory directory_0 = new Directory(16, Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS, caches);
+        Semaphore directoryLock_1 = new Semaphore(1);
+        Directory directory_1 = new Directory(8, Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS, caches);
+
+        dataCache_1.setLocalDirectory(directory_0);
+        dataCache_1.setRemoteDirectory(directory_1);
+
+        dataCache_2.setLocalDirectory(directory_0);
+        dataCache_2.setRemoteDirectory(directory_1);
+
+        dataCache_3.setLocalDirectory(directory_1);
+        dataCache_3.setRemoteDirectory(directory_0);
+
+        DataCache[] caches_P0 = new DataCache[]{dataCache_1,dataCache_2};
+        DataCache[] caches_P1 = new DataCache[]{dataCache_3};
 
         Processor processor_0 = new Processor(sharedMemory,
                 instructionMemory_0,
-                directory_0,
-                directory_1,
                 threadsP0,
-                Config.CORE_COUNT_P0,
                 threadCountP0,
-                Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS,
                 quantum,
                 "Processor 0",
-                new Semaphore[]{dataCacheLock_0,dataCacheLock_1},
-                new Semaphore[]{dataCacheLock_2});
+                caches_P0
+                );
 
         Processor processor_1 = new Processor(sharedMemory,
                 instructionMemory_1,
-                directory_0,
-                directory_1,
                 threadsP1,
-                Config.CORE_COUNT_P1,
                 threadCountP1,
-                Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS,
                 quantum,
                 "Processor 1",
-                new Semaphore[]{dataCacheLock_2},
-                new Semaphore[]{dataCacheLock_0,dataCacheLock_1});
+                caches_P1);
 
         processor_0.start();
         processor_1.start();
@@ -106,7 +142,9 @@ public class Simulator {
                 instructions.add(actualAddress);
                 actualAddress += 4;
             }
-            thread = new Thread(initialAddress, instructions);
+            // Our thread's name.
+            String threadName = fileToRead.getName().substring(0,fileToRead.getName().indexOf('.'));
+            thread = new Thread(initialAddress, instructions, threadName);
         }
         catch(Exception e){
             e.printStackTrace();

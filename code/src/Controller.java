@@ -1,4 +1,5 @@
 import simulation.Config;
+import simulation.clock.Clock;
 import simulation.simulator.Simulator;
 
 import java.util.ArrayList;
@@ -116,6 +117,7 @@ public class Controller {
                 e.printStackTrace();
             }
         }
+        System.out.println("Number of cycles used: "+ Clock.getCycle());
         System.out.println("Thanks for using our simulation! Bye.");
     }
 }
