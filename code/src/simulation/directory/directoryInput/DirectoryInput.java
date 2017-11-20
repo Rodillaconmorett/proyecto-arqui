@@ -54,4 +54,7 @@ public class DirectoryInput {
         return counter;
     }
 
+    public boolean[] getCaches() {
+        return caches;
+    }
 }

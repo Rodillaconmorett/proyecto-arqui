@@ -18,12 +18,12 @@ public class DataBlock {
      * @param numBlock Location of our block in our shared memory.
      */
     public DataBlock(int numBlock){
-        numBlock = numBlock;
+        this.numBlock = numBlock;
         state = BlockState.UNCACHED;
         data = new int[4];
         // We must set all integers to 0 when initializing our data block.
         for (int i = 0; i < 4; i++) {
-            data[i] = 0;
+            data[i] = 1;
         }
     }
 
