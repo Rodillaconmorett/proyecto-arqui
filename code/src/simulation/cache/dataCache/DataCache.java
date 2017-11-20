@@ -10,28 +10,35 @@ import simulation.states.BlockState;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Object representing our data caches.
+ */
 public class DataCache {
-
+    /// Memory bus.
     private Semaphore memoryBus;
-
+    /// My cache lock.
     private Semaphore myLock;
-
+    /// References to our to th other local caches.
     private ArrayList<DataCache> localCaches;
-
+    /// References to th other remote caches.
     private ArrayList<DataCache> remoteCaches;
-
+    /// Interconnection bus.
     private Semaphore interConnectionBus;
-
+    /// Shared memory managed by the data cache.
     private SharedMemory sharedMemory;
-
+    /// Local directory.
     private Directory localDirectory;
-
+    /// Remote directory.
     private Directory remoteDirectory;
-
+    /// Data inside our cache.
     private DataBlock[] cache;
-
+    /// Number of cycles used in the last fetch.
     private int usedCycles;
 
+    /**
+     * Default constructor.
+     * @param myLock Our cache lock.
+     */
     public DataCache(Semaphore myLock) {
         this.myLock = myLock;
         this.localCaches = new ArrayList<>();
@@ -43,6 +50,11 @@ public class DataCache {
         this.usedCycles = 0;
     }
 
+    /**
+     * Given an address, returns it's data value.
+     * @param dataAddress
+     * @return
+     */
     public Integer getDataRequired(int dataAddress){
         int blockAssigned = dataAddress / 16;
         int positionCache = blockAssigned % 4;
@@ -189,6 +201,12 @@ public class DataCache {
         return cache[positionCache].getData()[wordPosition];
     }
 
+    /**
+     * Modify a victim block in either it's directory or/and memory.
+     * @param blockAssigned Block number.
+     * @param positionCache Position in cache.
+     * @return Return if it was possible or not to modified.
+     */
     private Integer modifyVictim(int blockAssigned, int positionCache) {
         // Check if victim block is modified or shared. Otherwise, we won't need to change anything.
         if(cache[positionCache].getState() == BlockState.MODIFIED || cache[positionCache].getState() == BlockState.SHARED){
@@ -212,6 +230,14 @@ public class DataCache {
         return 1;
     }
 
+    /**
+     * Support method of our modifyVictim.
+     * @param cacheStats Cache information needed to fetch an address.
+     * @param blockAssigned Number of the block required.
+     * @param positionCache Position in cache of the block.
+     * @param dataAddress Address needed.
+     * @return Return either 1 if success or null if failure.
+     */
     private Integer modifyVictimState(CacheStats cacheStats, int blockAssigned, int positionCache, int dataAddress) {
         if(cacheStats.getDirectoryLock().tryAcquire()) {
             try {
@@ -269,6 +295,11 @@ public class DataCache {
         return 1;
     }
 
+    /**
+     *
+     * @param blockAssigned
+     * @return
+     */
     private CacheStats getCacheStats(int blockAssigned) {
         if((localCaches.size() == 1 && blockAssigned < 16) || (localCaches.size() == 0 && blockAssigned >= 16)){
             return new CacheStats(localDirectory, localDirectory.getDirectoryLock(), 16, 1, false);
@@ -277,6 +308,10 @@ public class DataCache {
         }
     }
 
+    /**
+     * Return the number of used cycles of the last fetch.
+     * @return Number of cycles.
+     */
     public int getUsedCyclesOfLastRead(){
         int usedCycles = this.usedCycles;
         this.usedCycles = 0;

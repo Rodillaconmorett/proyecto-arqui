@@ -27,10 +27,6 @@ public class DirectoryInput {
         return state;
     }
 
-    public boolean isCache(int cacheNum) {
-        return caches[cacheNum];
-    }
-
     public void setState(BlockState state) {
         this.state = state;
     }
@@ -44,6 +40,10 @@ public class DirectoryInput {
         caches[numCache] = cacheState;
     }
 
+    /**
+     * Return the number of valid states.
+     * @return Number of valid states.
+     */
     public int countValidStates() {
         int counter = 0;
         for (int i = 0; i < caches.length; i++) {

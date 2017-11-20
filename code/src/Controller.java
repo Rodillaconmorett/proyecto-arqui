@@ -62,8 +62,8 @@ public class Controller {
         //Let's ask for the quantum, alright.
         int quantum = -1;
         do {
-            quantum = receiveIntegerFromUser("Please, select a quatum for our cores. It must be bigger than 200.", "Oh, sorry you must enter an integer.");
-        } while(quantum < 200);
+            quantum = receiveIntegerFromUser("Please, select a quatum for our cores. It must be bigger than 30.", "Oh, sorry you must enter an integer.");
+        } while(quantum < 30);
         //Now, let's see if the user would like to see every single execution.
         //This means, that every instruction executed, will display what it did and how long it took.
         boolean infoDisplay = false;

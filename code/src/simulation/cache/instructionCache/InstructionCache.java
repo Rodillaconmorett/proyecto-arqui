@@ -9,12 +9,23 @@ import simulation.instructionMemory.InstructionMemory;
 
 import java.util.concurrent.Semaphore;
 
+/**
+ * Cache of instruction.
+ */
 public class InstructionCache {
+    /// Cache lock.
     private Semaphore busInstruction;
+    /// Instruction memory.
     private InstructionMemory memory;
+    /// Instructions located in our each cache position.
     private InstructionBlock[] cache;
+    /// Number of used cycles in the last operation.
     private int usedCycles;
 
+    /**
+     * Default constructor.
+     * @param memory Instruction memory managed by this cache.
+     */
     public InstructionCache(InstructionMemory memory){
         this.busInstruction = new Semaphore(1);
         this.memory = memory;
@@ -25,6 +36,12 @@ public class InstructionCache {
         this.usedCycles = 0;
     }
 
+    /**
+     * Read an address from the instruction memory and return it's value.
+     * @param addressInstruction Address of the instruction.
+     * @param coreName Name of the core asking for the instruction.
+     * @return Instruction.
+     */
     public Instruction readInstruction(int addressInstruction, String coreName) {
         int blockAssigned = addressInstruction / 16;
         int positionCache = blockAssigned % 4;
@@ -62,6 +79,10 @@ public class InstructionCache {
         return cache[positionCache].getInstructions()[wordPosition];
     }
 
+    /**
+     * Return the number of cycles used to read an instruction.
+     * @return Number of cycles that were used.
+     */
     public int getUsedCyclesOfLastRead(){
         int usedCycles = this.usedCycles;
         this.usedCycles = 0;

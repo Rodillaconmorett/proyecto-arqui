@@ -85,6 +85,11 @@ public class Directory {
         }
     }
 
+    /**
+     * Returns the caches references that are valid in our directory.
+     * @param address Address of the block we are looking for.
+     * @return ArrayList of caches that are valid.
+     */
     public ArrayList<DataCache> getValidCaches(int address) {
         int finalAddress = (address-initialAddress)/16;
         ArrayList<DataCache> validCaches = new ArrayList<>();
@@ -96,6 +101,13 @@ public class Directory {
         return validCaches;
     }
 
+    /**
+     * Change the state of a cache in the directory.
+     * @param address Address of the block that will be changed.
+     * @param cache Cache that will be modified.
+     * @param state True or false.
+     * @param blockState New state for our directory input.
+     */
     public void changeCacheState(int address, DataCache cache, boolean state, BlockState blockState){
         int finalAddress = (address-initialAddress)/16;
         inputs[finalAddress].setState(blockState);
@@ -106,6 +118,11 @@ public class Directory {
         }
     }
 
+    /**
+     * Return the number of valid states.
+     * @param address Address of the block that will be analyzed.
+     * @return The number of valid states.
+     */
     public int countStates(int address) {
         int finalAddress = (address-initialAddress)/16;
         return inputs[finalAddress].countValidStates();

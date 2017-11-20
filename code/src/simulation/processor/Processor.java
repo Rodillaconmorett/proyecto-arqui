@@ -13,19 +13,35 @@ import simulation.thread.Thread;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+/**
+ * Our representation of the processors of our computer.
+ */
 public class Processor {
     /// Cores that belong to our processor.
     private Core[] cores;
-    /// Caches that that correspond to each core.
+    /// Data caches that that correspond to each core.
     private DataCache[] caches;
     /// Threads that will be executed in this processor.
     private Thread[] threads;
-    ///
+    /// Instruction caches that correspond to each core.
     private InstructionCache instructionCache;
+    /// Instruction bus.
     private Semaphore instructionBus;
+    /// Semaphores that belong to each program thread.
     private Semaphore[] threadSem;
+    /// Name of the processor.
     private String processorName;
 
+    /**
+     * Default constructor.
+     * @param sharedMemory Shared memory.
+     * @param instructionMemory Instruction memory.
+     * @param threads Program threads that will be executed.
+     * @param threadCount Number of programs that will run in our processor.
+     * @param quantum Quantum given to each thread, so that they can finish their instructions.
+     * @param processorName Name of our processor.
+     * @param caches Our caches.
+     */
     public Processor(SharedMemory sharedMemory,
                      InstructionMemory instructionMemory,
                      Thread[] threads,
@@ -41,7 +57,7 @@ public class Processor {
             this.threadSem[i] = new Semaphore(1);
         }
         this.threads = threads;
-
+        // Different set ups for each one of our processors.
         switch (this.processorName){
             case "Processor 0":
                 InstructionCache instructionCache_0 = new InstructionCache(instructionMemory);
@@ -73,6 +89,9 @@ public class Processor {
         }
     }
 
+    /**
+     * Start the execution of our cores.
+     */
     public void start() {
         for (int i = 0; i < cores.length; i++) {
             cores[i].start();
