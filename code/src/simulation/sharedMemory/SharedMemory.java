@@ -23,11 +23,21 @@ public class SharedMemory {
         }
     }
 
+    /**
+     * Given a data block, we save in it's respective address.
+     * @param block Block to save in memory.
+     */
     public void saveDataBlock(DataBlock block) {
         blocks[block.getNumBlock()] = block;
     }
 
+    /**
+     * Given an address, returns a block of data.
+     * @param address Address of the desired block.
+     * @return Data block located in the given address.
+     */
     public DataBlock getDataBlock(int address) {
+        // To find the right block, we need to divide by 16.
         int finalAddress = address/16;
         return blocks[finalAddress];
     }

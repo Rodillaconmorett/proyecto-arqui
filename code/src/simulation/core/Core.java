@@ -55,20 +55,10 @@ public class Core extends java.lang.Thread {
     @Override
     public void run() {
         while (true) {
-            if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished() && threads[currentThreadIndex].getMyLock().tryAcquire()) {
+            if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished()) {
                 while (true) {
-                    if(currentContextIndex >= 0){
-                        registers = threads[currentThreadIndex].getRegisters();
-                        pcRegister = threads[currentThreadIndex].getPc();
-                    }
-                    if (currentThreadIndex != currentContextIndex) {
-                        currentContextIndex = currentThreadIndex;
-                        registers = threads[currentThreadIndex].getRegisters();
-                        pcRegister = threads[currentThreadIndex].getPc();
-                    }
-                    if(currentContextIndex < 0) {
-                        int a = 0;
-                    }
+                    registers = threads[currentThreadIndex].getRegisters();
+                    pcRegister = threads[currentThreadIndex].getPc();
                     Instruction instruction = read(pcRegister);
                     if (instruction.getTypeOfInstruction() == 63) {
                         if (Config.DISPLAY_INFO) {
@@ -122,7 +112,6 @@ public class Core extends java.lang.Thread {
                             quantumLeftCycles = quantum;
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
                             threadSem[currentThreadIndex].release();
-                            threads[currentThreadIndex].getMyLock().release();
                             currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                             break;
                         }

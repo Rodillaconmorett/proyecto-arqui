@@ -14,10 +14,13 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class Processor {
-
+    /// Cores that belong to our processor.
     private Core[] cores;
+    /// Caches that that correspond to each core.
     private DataCache[] caches;
+    /// Threads that will be executed in this processor.
     private Thread[] threads;
+    ///
     private InstructionCache instructionCache;
     private Semaphore instructionBus;
     private Semaphore[] threadSem;
