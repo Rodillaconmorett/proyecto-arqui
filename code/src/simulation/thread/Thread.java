@@ -1,18 +1,32 @@
 package simulation.thread;
 
 import java.util.Vector;
-import java.util.concurrent.Semaphore;
 
+/**
+ * Representation of running programs in our computer.
+ */
 public class Thread {
+    /// Process counter.
     private int pc;
+    /// Initial process counter.
     private int initialPc;
+    /// Registers values of this process.
     private int[] registers;
+    /// Vector of memory address pointing to it's instructions in our instruction memory.
     private Vector<Integer> instructions;
+    /// Number of cycles completed.
     private int cycles;
+    /// Tell us if the process has finished running.
     private boolean finished;
+    /// Name of the process.
     private String name;
-    private Semaphore myLock;
 
+    /**
+     * Default cnstructor.
+     * @param pc Initial process counter.
+     * @param instructions Instruction's address to run, pointing to our instruction memory.
+     * @param name Name of the process.
+     */
     public Thread(int pc, Vector<Integer> instructions, String name) {
         this.pc = pc;
         this.finished = false;
@@ -21,9 +35,11 @@ public class Thread {
         this.instructions = instructions;
         this.cycles = 0;
         this.name = name;
-        this.myLock = new Semaphore(1);
     }
 
+    /**
+     * Save the current context. Used in context switches.
+     */
     public void saveContext(int[] registers, int pc) {
         this.registers = registers;
         this.pc = pc;
@@ -86,9 +102,5 @@ public class Thread {
 
     public String getName() {
         return name;
-    }
-
-    public Semaphore getMyLock() {
-        return myLock;
     }
 }
