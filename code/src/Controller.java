@@ -1,4 +1,5 @@
 import simulation.Config;
+import simulation.SafePrint;
 import simulation.clock.Clock;
 import simulation.simulator.Simulator;
 
@@ -117,7 +118,7 @@ public class Controller {
                 e.printStackTrace();
             }
         }
-        System.out.println("Number of cycles used: "+ Clock.getCycle());
-        System.out.println("Thanks for using our simulation! Bye.");
+        SafePrint.print("Number of cycles used: "+ Clock.getCycle());
+        SafePrint.print("Thanks for using our simulation! Bye.");
     }
 }
