@@ -8,7 +8,6 @@ import simulation.cache.instructionCache.InstructionCache;
 import simulation.clock.Clock;
 import simulation.thread.Thread;
 
-import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class Core extends java.lang.Thread {
@@ -56,12 +55,19 @@ public class Core extends java.lang.Thread {
     @Override
     public void run() {
         while (true) {
-            if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished()) {
+            if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished() && threads[currentThreadIndex].getMyLock().tryAcquire()) {
                 while (true) {
+                    if(currentContextIndex >= 0){
+                        registers = threads[currentThreadIndex].getRegisters();
+                        pcRegister = threads[currentThreadIndex].getPc();
+                    }
                     if (currentThreadIndex != currentContextIndex) {
                         currentContextIndex = currentThreadIndex;
                         registers = threads[currentThreadIndex].getRegisters();
                         pcRegister = threads[currentThreadIndex].getPc();
+                    }
+                    if(currentContextIndex < 0) {
+                        int a = 0;
                     }
                     Instruction instruction = read(pcRegister);
                     if (instruction.getTypeOfInstruction() == 63) {
@@ -116,20 +122,16 @@ public class Core extends java.lang.Thread {
                             quantumLeftCycles = quantum;
                             threads[currentThreadIndex].saveContext(registers, pcRegister);
                             threadSem[currentThreadIndex].release();
+                            threads[currentThreadIndex].getMyLock().release();
                             currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                             break;
                         }
+                        threads[currentThreadIndex].saveContext(registers, pcRegister);
                     }
                 }
             } else {
                 currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                int counter = 0;
-                for (int i = 0; i < threads.length; i++) {
-                    if(!threads[i].isFinished()) {
-                        counter++;
-                    }
-                }
-                if (threadsDidFinished() || counter < 1){
+                if (threadsDidFinished()){
                     Clock.reduceCoreCount();
                     break;
                 } else {
@@ -141,10 +143,10 @@ public class Core extends java.lang.Thread {
 
 
     /**
-     * Reads the instruction address
+     * Reads the address from the instruction address.
      *
-     * @param addressInstruction
-     * @return
+     * @param addressInstruction Address of the instruction we want to read.
+     * @return Instruction to be executed.
      */
     private Instruction read(int addressInstruction) {
         Instruction instruction = null;
@@ -164,9 +166,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        registers[instruction.getSecondParameter()]
-                = registers[instruction.getFirstParameter()]
-                + instruction.getThirdParameter();
+        registers[instruction.getSecondParameter()] = registers[instruction.getFirstParameter()] + instruction.getThirdParameter();
         Clock.executeBarrier();
         quantumLeftCycles--;
         pcRegister+=4;
@@ -176,9 +176,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        registers[instruction.getThirdParameter()]
-                = registers[instruction.getFirstParameter()]
-                + registers[instruction.getSecondParameter()];
+        registers[instruction.getThirdParameter()] = registers[instruction.getFirstParameter()] + registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
         pcRegister+=4;
@@ -188,9 +186,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        registers[instruction.getThirdParameter()]
-                = registers[instruction.getFirstParameter()]
-                - registers[instruction.getSecondParameter()];
+        registers[instruction.getThirdParameter()] = registers[instruction.getFirstParameter()] - registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
         pcRegister+=4;
@@ -200,9 +196,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        registers[instruction.getThirdParameter()]
-                = registers[instruction.getFirstParameter()]
-                * registers[instruction.getSecondParameter()];
+        registers[instruction.getThirdParameter()] = registers[instruction.getFirstParameter()] * registers[instruction.getSecondParameter()];
         Clock.executeBarrier();
         quantumLeftCycles--;
         pcRegister+=4;
@@ -212,9 +206,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        registers[instruction.getThirdParameter()]
-                = registers[instruction.getFirstParameter()]
-                / registers[instruction.getSecondParameter()];
+        registers[instruction.getThirdParameter()] = registers[instruction.getFirstParameter()] / registers[instruction.getSecondParameter()];
         pcRegister+=4;
         Clock.executeBarrier();
         quantumLeftCycles--;
@@ -238,7 +230,6 @@ public class Core extends java.lang.Thread {
         }
         if (registers[instruction.getFirstParameter()] != 0) {
             pcRegister += (instruction.getThirdParameter()*4);
-
         }
         pcRegister+=4;
         Clock.executeBarrier();
@@ -249,7 +240,7 @@ public class Core extends java.lang.Thread {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
         }
-        pcRegister+=4;
+        pcRegister += 4;
         registers[31] = pcRegister;
         pcRegister = pcRegister + (instruction.getThirdParameter());
         Clock.executeBarrier();

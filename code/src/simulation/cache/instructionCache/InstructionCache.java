@@ -15,8 +15,8 @@ public class InstructionCache {
     private InstructionBlock[] cache;
     private int usedCycles;
 
-    public InstructionCache(Semaphore busInstruction, InstructionMemory memory){
-        this.busInstruction = busInstruction;
+    public InstructionCache(InstructionMemory memory){
+        this.busInstruction = new Semaphore(1);
         this.memory = memory;
         this.cache = new InstructionBlock[4];
         for (int i = 0; i < 4; i++) {

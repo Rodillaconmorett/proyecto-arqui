@@ -1,6 +1,7 @@
 package simulation.processor;
 
 import simulation.Config;
+import simulation.block.instruction.Instruction;
 import simulation.cache.dataCache.DataCache;
 import simulation.cache.instructionCache.InstructionCache;
 import simulation.core.Core;
@@ -36,12 +37,11 @@ public class Processor {
         for (int i = 0; i < threadCount; i++) {
             this.threadSem[i] = new Semaphore(1);
         }
-        this.instructionCache = new InstructionCache(instructionBus, instructionMemory);
         this.threads = threads;
 
         switch (this.processorName){
             case "Processor 0":
-                InstructionCache instructionCache_0 = new InstructionCache(instructionBus, instructionMemory);
+                InstructionCache instructionCache_0 = new InstructionCache(instructionMemory);
                 cores = new Core[2];
                 cores[0] = new Core(instructionCache_0,
                         caches[0],
@@ -49,25 +49,23 @@ public class Processor {
                         threads,
                         threadSem,
                         processorName+": Core: 0");
-                Config.threads.add(cores[0]);
-                InstructionCache instructionCache_1 = new InstructionCache(instructionBus, instructionMemory);
+                InstructionCache instructionCache_1 = new InstructionCache(instructionMemory);
                 cores[1] = new Core(instructionCache_1,
                         caches[1],
                         quantum,
                         threads,
                         threadSem,
                         processorName+": Core: 1");
-                Config.threads.add(cores[1]);
                 break;
             case "Processor 1":
                 cores = new Core[1];
-                cores[0] = new Core(instructionCache,
+                InstructionCache instructionCache_2 = new InstructionCache(instructionMemory);
+                cores[0] = new Core(instructionCache_2,
                         caches[0],
                         quantum,
                         threads,
                         threadSem,
                         processorName+": Core: 0");
-                Config.threads.add(cores[0]);
                 break;
         }
     }

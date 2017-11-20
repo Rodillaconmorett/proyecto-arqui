@@ -1,6 +1,7 @@
 package simulation.thread;
 
 import java.util.Vector;
+import java.util.concurrent.Semaphore;
 
 public class Thread {
     private int pc;
@@ -10,6 +11,7 @@ public class Thread {
     private int cycles;
     private boolean finished;
     private String name;
+    private Semaphore myLock;
 
     public Thread(int pc, Vector<Integer> instructions, String name) {
         this.pc = pc;
@@ -19,6 +21,7 @@ public class Thread {
         this.instructions = instructions;
         this.cycles = 0;
         this.name = name;
+        this.myLock = new Semaphore(1);
     }
 
     public void saveContext(int[] registers, int pc) {
@@ -83,5 +86,9 @@ public class Thread {
 
     public String getName() {
         return name;
+    }
+
+    public Semaphore getMyLock() {
+        return myLock;
     }
 }
