@@ -4,6 +4,7 @@ import simulation.cache.dataCache.DataCache;
 import simulation.directory.directoryInput.DirectoryInput;
 import simulation.states.BlockState;
 
+import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -40,7 +41,7 @@ public class Directory {
      * @return Block's state.
      */
     public BlockState findState(int address) {
-        int finalAddress = (address-initialAddress)/4;
+        int finalAddress = (address-initialAddress)/16;
         return inputs[finalAddress].getState();
     }
     /**
@@ -49,7 +50,7 @@ public class Directory {
      * @return State of the block in the different caches.
      */
     public DirectoryInput getCachesState(int address) {
-        int finalAddress = (address-initialAddress)/4;
+        int finalAddress = (address-initialAddress)/16;
         return inputs[finalAddress];
     }
 
@@ -82,6 +83,17 @@ public class Directory {
                 inputs[finalAddress].setCacheState(i,state);
             }
         }
+    }
+
+    public ArrayList<DataCache> getValidCaches(int address) {
+        int finalAddress = (address-initialAddress)/16;
+        ArrayList<DataCache> validCaches = new ArrayList<>();
+        for (int i = 0; i < caches.length; i++) {
+            if(inputs[finalAddress].getCaches()[i]) {
+                validCaches.add(caches[i]);
+            }
+        }
+        return validCaches;
     }
 
     public void changeCacheState(int address, DataCache cache, boolean state, BlockState blockState){

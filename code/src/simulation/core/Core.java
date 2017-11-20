@@ -57,89 +57,75 @@ public class Core extends java.lang.Thread {
     public void run() {
         while (true) {
             if (threadSem[currentThreadIndex].tryAcquire() && !threads[currentThreadIndex].isFinished()) {
-                try {
-                    while (true) {
-                        int counter = 0;
-                        for (Thread thread : threads) {
-                            if (!thread.isFinished()) {
-                                counter++;
-                            }
+                while (true) {
+                    if (currentThreadIndex != currentContextIndex) {
+                        currentContextIndex = currentThreadIndex;
+                        registers = threads[currentThreadIndex].getRegisters();
+                        pcRegister = threads[currentThreadIndex].getPc();
+                    }
+                    Instruction instruction = read(pcRegister);
+                    if (instruction.getTypeOfInstruction() == 63) {
+                        if (Config.DISPLAY_INFO) {
+                            printInstruction(instruction, pcRegister);
                         }
-                        if (currentThreadIndex != currentContextIndex || counter == 1) {
-                            currentContextIndex = currentThreadIndex;
-                            registers = threads[currentThreadIndex].getRegisters();
-                            pcRegister = threads[currentThreadIndex].getPc();
+                        threads[currentThreadIndex].saveContext(registers, pcRegister);
+                        if (Config.DISPLAY_REGISTER) {
+                            SafePrint.printRegisters(threads[currentThreadIndex], coreName);
                         }
-                        if (pcRegister < 0) {
-                            threads[currentThreadIndex].saveContext(registers, pcRegister);
-                            currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                        } else {
-                            Instruction instruction = read(pcRegister);
-                            if (instruction.getTypeOfInstruction() == 63) {
-                                if (Config.DISPLAY_INFO) {
-                                    printInstruction(instruction, pcRegister);
-                                }
-                                threads[currentThreadIndex].saveContext(registers, pcRegister);
-                                if (Config.DISPLAY_REGISTER) {
-                                    SafePrint.printRegisters(threads[currentThreadIndex],coreName);
-                                }
-                                threads[currentThreadIndex].setFinished(true);
-                                currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                                Clock.executeBarrier();
+                        threads[currentThreadIndex].setFinished(true);
+                        currentThreadIndex = (currentThreadIndex + 1) % threads.length;
+                        Clock.executeBarrier();
+                        break;
+                    } else {
+                        switch (instruction.getTypeOfInstruction()) {
+                            case 2:
+                                ExecuteJR(instruction);
                                 break;
-                            } else {
-                                switch (instruction.getTypeOfInstruction()) {
-                                    case 2:
-                                        ExecuteJR(instruction);
-                                        break;
-                                    case 3:
-                                        ExecuteJAL(instruction);
-                                        break;
-                                    case 4:
-                                        ExecuteBEQZ(instruction);
-                                        break;
-                                    case 5:
-                                        ExecuteBNEZ(instruction);
-                                        break;
-                                    case 8:
-                                        ExecuteDADDI(instruction);
-                                        break;
-                                    case 12:
-                                        ExecuteDMUL(instruction);
-                                        break;
-                                    case 14:
-                                        ExecuteDDIV(instruction);
-                                        break;
-                                    case 32:
-                                        ExecuteDADD(instruction);
-                                        break;
-                                    case 34:
-                                        ExecuteDSUB(instruction);
-                                        break;
-                                    case 35:
-                                        ExecuteLW(instruction);
-                                        break;
-                                    case 43:
-                                        ExecuteSW(instruction);
-                                        break;
-                                }
-                                if (quantumLeftCycles < 1) {
-                                    quantumLeftCycles = quantum;
-                                    break;
-                                }
-                            }
+                            case 3:
+                                ExecuteJAL(instruction);
+                                break;
+                            case 4:
+                                ExecuteBEQZ(instruction);
+                                break;
+                            case 5:
+                                ExecuteBNEZ(instruction);
+                                break;
+                            case 8:
+                                ExecuteDADDI(instruction);
+                                break;
+                            case 12:
+                                ExecuteDMUL(instruction);
+                                break;
+                            case 14:
+                                ExecuteDDIV(instruction);
+                                break;
+                            case 32:
+                                ExecuteDADD(instruction);
+                                break;
+                            case 34:
+                                ExecuteDSUB(instruction);
+                                break;
+                            case 35:
+                                ExecuteLW(instruction);
+                                break;
+                            case 43:
+                                ExecuteSW(instruction);
+                                break;
+                        }
+                        if (quantumLeftCycles < 1) {
+                            quantumLeftCycles = quantum;
+                            threads[currentThreadIndex].saveContext(registers, pcRegister);
+                            threadSem[currentThreadIndex].release();
+                            currentThreadIndex = (currentThreadIndex + 1) % threads.length;
+                            break;
                         }
                     }
-                } finally {
-                    threads[currentThreadIndex].saveContext(registers, pcRegister);
-                    threadSem[currentThreadIndex].release();
-                    currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                 }
             } else {
                 currentThreadIndex = (currentThreadIndex + 1) % threads.length;
                 int counter = 0;
-                for (Thread thread : threads) {
-                    if (!thread.isFinished()) {
+                for (int i = 0; i < threads.length; i++) {
+                    if(!threads[i].isFinished()) {
                         counter++;
                     }
                 }
@@ -287,7 +273,7 @@ public class Core extends java.lang.Thread {
                 quantumLeftCycles--;
             }
             memoryRequired = dataCache
-                    .getDataRequired(instruction.getThirdParameter() + registers[instruction.getFirstParameter()], this.coreName);
+                    .getDataRequired(instruction.getThirdParameter() + registers[instruction.getFirstParameter()]);
             if (memoryRequired == null) {
                 quantumLeftCycles -= dataCache.getUsedCyclesOfLastRead();
                 dataCache.getMyLock().release();
@@ -303,7 +289,7 @@ public class Core extends java.lang.Thread {
         } while (memoryRequired == null);
         Clock.executeBarrier();
         quantumLeftCycles--;
-        registers[instruction.getFirstParameter()] = memoryRequired;
+        registers[instruction.getSecondParameter()] = memoryRequired;
     }
 
     private void ExecuteSW(Instruction instruction) {

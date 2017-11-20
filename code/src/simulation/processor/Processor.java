@@ -41,15 +41,17 @@ public class Processor {
 
         switch (this.processorName){
             case "Processor 0":
+                InstructionCache instructionCache_0 = new InstructionCache(instructionBus, instructionMemory);
                 cores = new Core[2];
-                cores[0] = new Core(instructionCache,
+                cores[0] = new Core(instructionCache_0,
                         caches[0],
                         quantum,
                         threads,
                         threadSem,
                         processorName+": Core: 0");
                 Config.threads.add(cores[0]);
-                cores[1] = new Core(instructionCache,
+                InstructionCache instructionCache_1 = new InstructionCache(instructionBus, instructionMemory);
+                cores[1] = new Core(instructionCache_1,
                         caches[1],
                         quantum,
                         threads,

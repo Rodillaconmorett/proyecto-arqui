@@ -73,23 +73,21 @@ public class Simulator {
 
         for (int i = 0; i < threadCountP0; i++) {
             if(i>0) {
-                threadsP0[i] = setUpInstructions(instructionMemory_0, Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS+threadsP0[i-1].getInstructions().size()*4, files.get(i));
+                threadsP0[i] = setUpInstructions(instructionMemory_0, threadsP0[i-1].getInitialPc()+threadsP0[i-1].getInstructions().size()*4, files.get(i));
             } else {
                 threadsP0[i] = setUpInstructions(instructionMemory_0, Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS, files.get(i));
             }
         }
         for (int i = threadCountP0; i < folder.list().length; i++) {
             if(i>threadCountP0) {
-                threadsP1[i-threadCountP0] = setUpInstructions(instructionMemory_1, Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS+threadsP1[i-1-threadCountP0].getInstructions().size()*4, files.get(i));
+                threadsP1[i-threadCountP0] = setUpInstructions(instructionMemory_1, threadsP1[i-1-threadCountP0].getInitialPc()+threadsP1[i-1-threadCountP0].getInstructions().size()*4, files.get(i));
             } else {
                 threadsP1[i-threadCountP0] = setUpInstructions(instructionMemory_1, Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS, files.get(i));
             }
         }
 
-        Semaphore directoryLock_0 = new Semaphore(1);
-        Directory directory_0 = new Directory(16, Config.INSTRUCTION_MEMORY_0_INITIAL_ADDRESS, caches);
-        Semaphore directoryLock_1 = new Semaphore(1);
-        Directory directory_1 = new Directory(8, Config.INSTRUCTION_MEMORY_1_INITIAL_ADDRESS, caches);
+        Directory directory_0 = new Directory(16, 0, caches);
+        Directory directory_1 = new Directory(8, 256, caches);
 
         dataCache_1.setLocalDirectory(directory_0);
         dataCache_1.setRemoteDirectory(directory_1);
