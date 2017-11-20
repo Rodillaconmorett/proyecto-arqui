@@ -69,12 +69,14 @@ public class Processor {
                         threadSem,
                         processorName+": Core: 0");
                 InstructionCache instructionCache_1 = new InstructionCache(instructionMemory);
+                Config.threads.add(cores[0]);
                 cores[1] = new Core(instructionCache_1,
                         caches[1],
                         quantum,
                         threads,
                         threadSem,
                         processorName+": Core: 1");
+                Config.threads.add(cores[1]);
                 break;
             case "Processor 1":
                 cores = new Core[1];
@@ -85,6 +87,7 @@ public class Processor {
                         threads,
                         threadSem,
                         processorName+": Core: 0");
+                Config.threads.add(cores[0]);
                 break;
         }
     }
