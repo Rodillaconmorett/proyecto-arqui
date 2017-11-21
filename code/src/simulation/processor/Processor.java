@@ -64,6 +64,7 @@ public class Processor {
                 cores = new Core[2];
                 cores[0] = new Core(instructionCache_0,
                         caches[0],
+                        cores.length,
                         quantum,
                         threads,
                         threadSem,
@@ -72,6 +73,7 @@ public class Processor {
                 Config.threads.add(cores[0]);
                 cores[1] = new Core(instructionCache_1,
                         caches[1],
+                        cores.length,
                         quantum,
                         threads,
                         threadSem,
@@ -83,6 +85,7 @@ public class Processor {
                 InstructionCache instructionCache_2 = new InstructionCache(instructionMemory);
                 cores[0] = new Core(instructionCache_2,
                         caches[0],
+                        cores.length,
                         quantum,
                         threads,
                         threadSem,
