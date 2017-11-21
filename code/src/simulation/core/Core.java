@@ -119,8 +119,14 @@ public class Core extends java.lang.Thread {
                     }
                 }
             } else {
+                int counter = 0;
+                for (int i = 0; i < threads.length; i++) {
+                    if(!threads[i].isFinished()) {
+                        counter++;
+                    }
+                }
                 currentThreadIndex = (currentThreadIndex + 1) % threads.length;
-                if (threadsDidFinished()){
+                if (threadsDidFinished() || ( counter <= 1 && Clock.getCoreCount() > 1)){
                     Clock.reduceCoreCount();
                     break;
                 } else {
@@ -273,7 +279,26 @@ public class Core extends java.lang.Thread {
     }
 
     private void ExecuteSW(Instruction instruction) {
-
+        boolean success = false;
+        do {
+            while(!dataCache.getMyLock().tryAcquire()) {
+                Clock.executeBarrier();
+                quantumLeftCycles--;
+            }
+            success = dataCache.storeDate(registers[instruction.getSecondParameter()], registers[instruction.getFirstParameter()], instruction.getThirdParameter());
+            if(success) {
+                quantumLeftCycles -= dataCache.getUsedCyclesOfLastRead();
+                pcRegister += 4;
+                dataCache.getMyLock().release();
+                Clock.executeBarrier();
+                quantumLeftCycles--;
+            } else {
+                quantumLeftCycles -= dataCache.getUsedCyclesOfLastRead();
+                dataCache.getMyLock().release();
+                Clock.executeBarrier();
+                quantumLeftCycles--;
+            }
+        } while (!success);
     }
 
     private boolean threadsDidFinished() {
