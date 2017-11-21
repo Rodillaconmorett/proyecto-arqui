@@ -23,7 +23,7 @@ public class DataBlock {
         data = new int[4];
         // We must set all integers to 0 when initializing our data block.
         for (int i = 0; i < 4; i++) {
-            data[i] = 1;
+            data[i] = 0;
         }
     }
 
