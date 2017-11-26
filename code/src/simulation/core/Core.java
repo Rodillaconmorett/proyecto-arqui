@@ -27,13 +27,13 @@ public class Core extends java.lang.Thread {
     private Semaphore[] threadSem;
 
     /**
-     * Builds a new core
-     *
-     * @param instructionCache
-     * @param dataCache
-     * @param quantum
-     * @param threads
-     * @param threadSem
+     * Builds a new core.
+     * @param instructionCache The instruction cache assigned to the core.
+     * @param dataCache The data cache assigned to the core.
+     * @param quantum The quantum of the entire simulation.
+     * @param threads The threads assigned to the processor that owns the core.
+     * @param threadSem An array of locks that protect each thread of the treads param.
+     * @param coreName The name of the core.
      */
     public Core(InstructionCache instructionCache,
                 DataCache dataCache,
@@ -55,6 +55,9 @@ public class Core extends java.lang.Thread {
     }
 
 
+    /**
+     * Tries to run the assigned threads and stops when all threads were completely executed.
+     */
     @Override
     public void run() {
         while (true) {
@@ -170,6 +173,10 @@ public class Core extends java.lang.Thread {
         return instruction;
     }
 
+    /**
+     * Executes the 'DADDI' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteDADDI(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -180,6 +187,10 @@ public class Core extends java.lang.Thread {
         pcRegister+=4;
     }
 
+    /**
+     * Executes the 'DADD' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteDADD(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -190,6 +201,10 @@ public class Core extends java.lang.Thread {
         pcRegister+=4;
     }
 
+    /**
+     * Executes the 'DSUB' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteDSUB(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -200,6 +215,10 @@ public class Core extends java.lang.Thread {
         pcRegister+=4;
     }
 
+    /**
+     * Executes the 'DMUL' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteDMUL(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -210,6 +229,10 @@ public class Core extends java.lang.Thread {
         pcRegister+=4;
     }
 
+    /**
+     * Executes the 'DDIV' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteDDIV(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -220,6 +243,10 @@ public class Core extends java.lang.Thread {
         quantumLeftCycles--;
     }
 
+    /**
+     * Executes the 'BEQZ' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteBEQZ(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -232,6 +259,10 @@ public class Core extends java.lang.Thread {
         quantumLeftCycles--;
     }
 
+    /**
+     * Executes the 'BNEZ' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteBNEZ(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -244,6 +275,10 @@ public class Core extends java.lang.Thread {
         quantumLeftCycles--;
     }
 
+    /**
+     * Executes the 'JAL' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteJAL(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -255,6 +290,10 @@ public class Core extends java.lang.Thread {
         quantumLeftCycles--;
     }
 
+    /**
+     * Executes the 'JR' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteJR(Instruction instruction) {
         if(Config.DISPLAY_INFO) {
             printInstruction(instruction, pcRegister);
@@ -264,6 +303,10 @@ public class Core extends java.lang.Thread {
         quantumLeftCycles--;
     }
 
+    /**
+     * Executes the 'LW' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteLW(Instruction instruction) {
         Integer memoryRequired = null;
         do {
@@ -291,6 +334,10 @@ public class Core extends java.lang.Thread {
         registers[instruction.getSecondParameter()] = memoryRequired;
     }
 
+    /**
+     * Executes the 'SW' instruction.
+     * @param instruction The container of the parameters that the instruction gonna read/write.
+     */
     private void ExecuteSW(Instruction instruction) {
         boolean success;
             if(dataCache.getMyLock().tryAcquire()) {
@@ -308,6 +355,10 @@ public class Core extends java.lang.Thread {
             }
     }
 
+    /**
+     * Checks if all threads were executed completely.
+     * @return True if and only if all threads are finished.
+     */
     private boolean threadsDidFinished() {
         for(int i = 0; i < threads.length; i++) {
             if(!threads[i].isFinished()) {
@@ -317,6 +368,11 @@ public class Core extends java.lang.Thread {
         return true;
     }
 
+    /**
+     * Prints the instruction code and the current pc register.
+     * @param instruction The container of the instruction core.
+     * @param pc The pc that the instruction
+     */
     private void printInstruction(Instruction instruction, int pc) {
         SafePrint.print(this.coreName +" Executed => "+instruction.print() + " | PC: " + pc);
     }
