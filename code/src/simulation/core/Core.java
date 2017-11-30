@@ -142,6 +142,13 @@ public class Core extends java.lang.Thread {
                 } else {
                     if (threadsDidFinished()){
                         Clock.reduceCoreCount();
+                        System.out.println("Estado de la memoria compartida al finalizar el core "+coreName+":");
+                        for (int i = 0; i < 24; i++) {
+                            for (int j = 0; j < 4; j++) {
+                                System.out.print(dataCache.sharedMemory.getDataBlock(i).getData()[j] + " ");
+                            }
+                            System.out.println();
+                        }
                         return;
                     } else {
                         Clock.executeBarrier();
